@@ -1,5 +1,7 @@
 #include <Arduino.h>
 
+#include "esp32-hal-log.h"
+
 #include <BLE2902.h>
 #include <BLEDevice.h>
 
@@ -57,6 +59,9 @@ void setupFido2Service(BLEServer *pServer)
 void setup()
 {
     Serial.begin(115200);
+    Serial.setDebugOutput(true);
+
+    esp_log_level_set("*", ESP_LOG_DEBUG);
 
     BLEDevice::init("URU Card");
 
