@@ -4,8 +4,11 @@
 
 #include <BLE2902.h>
 #include <BLEDevice.h>
+#include <BLESecurity.h>
 
+#include "ble/security.h"
 #include "ble/fido2.h"
+
 
 void setupDeviceInfoService(BLEServer *pServer)
 {
@@ -63,7 +66,10 @@ void setup()
 
     esp_log_level_set("*", ESP_LOG_DEBUG);
 
+    //
     BLEDevice::init("URU Card");
+    BLEDevice::setEncryptionLevel(ESP_BLE_SEC_ENCRYPT_MITM);
+    BLEDevice::setSecurityCallbacks(new SecurityCallbacks());
 
     // BLE Server
     BLEServer *pServer = BLEDevice::createServer();
