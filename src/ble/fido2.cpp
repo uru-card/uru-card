@@ -6,6 +6,18 @@
 
 void FIDO2ControlPointCallbacks::onWrite(BLECharacteristic *pCharacteristic)
 {
+    std::string value = pCharacteristic->getValue();
+    if (value.length() == 0)
+    {
+        return;
+    }
+
+    for (auto i = 0; i < value.length(); i++)
+    {
+        Serial.printf("%02X", value[i]);
+    }
+
+    Serial.println();
 }
 
 void FIDO2ControlPointLengthCallbacks::onRead(BLECharacteristic *pCharacteristic)
