@@ -6,9 +6,8 @@
 #include <BLEDevice.h>
 #include <BLESecurity.h>
 
-#include "ble/security.h"
 #include "ble/fido2.h"
-
+#include "ble/security.h"
 
 void setupDeviceInfoService(BLEServer *pServer)
 {
@@ -43,7 +42,7 @@ void setupFido2Service(BLEServer *pServer)
 
     // FIDO Status
     pFido2Service
-        ->createCharacteristic("F1D0FFF2-DEAA-ECEE-B42F-C9BA7ED623BB", BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY)
+        ->createCharacteristic("F1D0FFF2-DEAA-ECEE-B42F-C9BA7ED623BB", BLECharacteristic::PROPERTY_NOTIFY)
         ->addDescriptor(new BLE2902());
 
     // FIDO Control Point Length
@@ -82,10 +81,11 @@ void setup()
 
     // Setup Advertising
     BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-    pAdvertising->addServiceUUID((uint16_t)0xFFFD);
-    pAdvertising->setScanResponse(true);
+    pAdvertising->setScanResponse(false);
+    pAdvertising->setAppearance(0x00);
     pAdvertising->setMinPreferred(0x06); // functions that help with iPhone connections issue
-    pAdvertising->setMinPreferred(0x12);
+    pAdvertising->setMinPreferred(0x10);
+    pAdvertising->addServiceUUID((uint16_t)0xFFFD);
     BLEDevice::startAdvertising();
 }
 
