@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-#include "ble/fido2.h"
+#include "transport/ble/service-fido2.h"
 
 #define FIDO2_CONTROL_POINT_LENGTH 512
 
@@ -23,7 +23,7 @@ void FIDO2ControlPointCallbacks::onWrite(BLECharacteristic *pCharacteristic)
 void FIDO2ControlPointLengthCallbacks::onRead(BLECharacteristic *pCharacteristic)
 {
     uint8_t value[] = {(FIDO2_CONTROL_POINT_LENGTH >> 8) & 0xFF, FIDO2_CONTROL_POINT_LENGTH & 0xFF};
-    pCharacteristic->setValue(value, 2);
+    pCharacteristic->setValue(value, sizeof(value));
 }
 
 void FIDO2ServiceRevisionCallbacks::onRead(BLECharacteristic *pCharacteristic)

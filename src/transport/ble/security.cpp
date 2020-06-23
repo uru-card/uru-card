@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-#include "ble/security.h"
+#include "transport/ble/security.h"
 
 uint32_t SecurityCallbacks::onPassKeyRequest()
 {
