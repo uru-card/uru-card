@@ -35,14 +35,14 @@ void FIDO2ControlPointCallbacks::onWrite(BLECharacteristic *pCharacteristic)
         CTAP::inputBuffer.setCmd(cmd);
         CTAP::inputBuffer.setLength(length);
 
-        CTAP::inputBuffer.append();
+        // CTAP::inputBuffer.append();
     }
     else
     {
         // Continuation fragments begin with a sequence number, beginning at 0, implicitly with the high bit cleared.
         // The sequence number must wraparound to 0 after reaching the maximum sequence number of 0x7f.
 
-        CTAP::inputBuffer.append();
+        // CTAP::inputBuffer.append();
     }
 }
 

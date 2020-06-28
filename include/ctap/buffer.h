@@ -15,6 +15,6 @@ namespace CTAP
     protected:
     };
 
-    InputBuffer inputBuffer;
+    extern InputBuffer inputBuffer;
 
 } // namespace CTAP
