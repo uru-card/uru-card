@@ -1,10 +1,10 @@
 #include <Arduino.h>
+#include <BLEDevice.h>
 
 #include "esp32-hal-log.h"
 
-#include "transport/ble/transport.h"
-
-Transport::BLE bleTransport;
+#include "ble/device.h"
+#include "fido2/transport/ble/service.h"
 
 void setup()
 {
@@ -13,7 +13,11 @@ void setup()
 
     esp_log_level_set("*", ESP_LOG_DEBUG);
 
-    bleTransport.init();
+    BLE::init();
+
+    FIDO2::Transport::BLE::Service::init();
+
+    BLE::start();
 }
 
 void loop()
