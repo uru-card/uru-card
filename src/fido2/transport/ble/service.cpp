@@ -75,30 +75,20 @@ namespace FIDO2
                 if (cmd >= 0x80)
                 {
                     // The start of an initialization fragment is indicated by setting the high bit in the first byte.
-
                     // The subsequent two bytes indicate the total length of the frame, in big-endian order.
-                    uint16_t expectedLength = FROM_BIG_ENDIAN(value[1], value[2]);
-                    if (expectedLength > CommandBuffer::MAX_LENGTH)
-                    {
-                    }
-
                     // The first maxLen - 3 bytes of data follow.
-                    commandBuffer.reset();
-
-                    commandBuffer.setCmd(cmd);
-                    commandBuffer.setExpectedLength(expectedLength);
-
-                    if (commandBuffer.appendFragment((const uint8_t *)value.c_str() + 3, value.length() - 3) == 0)
+                    if (commandBuffer.init((const uint8_t *)value.c_str(), value.length()) == 0)
                     {
+                        // error
                     }
                 }
                 else
                 {
                     // Continuation fragments begin with a sequence number, beginning at 0, implicitly with the high bit cleared.
                     // The sequence number must wraparound to 0 after reaching the maximum sequence number of 0x7f.
-
-                    if (commandBuffer.appendFragment((const uint8_t *)value.c_str() + 1, value.length() - 1) == 0)
+                    if (commandBuffer.append((const uint8_t *)value.c_str(), value.length()) == 0)
                     {
+                        // error
                     }
                 }
 
@@ -106,7 +96,7 @@ namespace FIDO2
                 if (commandBuffer.isComplete())
                 {
                     Serial.printf("Received command 0x%02x with payload\n", commandBuffer.getCmd());
-                    serialDumpBuffer(commandBuffer.getPayload(), commandBuffer.getLength() - 1);
+                    serialDumpBuffer(commandBuffer.getPayload(), commandBuffer.getPayloadLength());
 
                     processCommand();
                 }
@@ -117,7 +107,7 @@ namespace FIDO2
                 switch (commandBuffer.getCmd())
                 {
                 case CMD_PING:
-                    statusCharacteristic->setValue(commandBuffer.getBuffer(), commandBuffer.getLength());
+                    statusCharacteristic->setValue(commandBuffer.getBuffer(), commandBuffer.getBufferLength());
                     statusCharacteristic->notify();
                     break;
                 case CMD_MSG:

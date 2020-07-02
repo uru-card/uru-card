@@ -2,6 +2,8 @@
 
 #include "fido2/transport/ble/buffer.h"
 
+#include "util.h"
+
 namespace FIDO2
 {
     namespace Transport
@@ -10,16 +12,30 @@ namespace FIDO2
         {
             CommandBuffer commandBuffer;
 
-            void CommandBuffer::reset()
+            uint16_t CommandBuffer::init(const uint8_t *data, const uint16_t length)
             {
-                buffer[0] = 0;
-                expectedLength = 0;
-                position = 0;
+                if (length > MAX_LENGTH)
+                {
+                    return 0;
+                }
+
+                memcpy(buffer, data, length);
+                position = length;
+
+                return length;
             }
 
-            void CommandBuffer::setCmd(const uint8_t cmd)
+            uint16_t CommandBuffer::append(const uint8_t *data, const uint16_t length)
             {
-                buffer[0] = cmd;
+                if (position + length - 1 > MAX_LENGTH)
+                {
+                    return 0;
+                }
+
+                memcpy(buffer + position, data + 1, length - 1);
+                position += length - 1;
+
+                return length;
             }
 
             uint8_t CommandBuffer::getCmd()
@@ -27,42 +43,29 @@ namespace FIDO2
                 return buffer[0];
             }
 
-            void CommandBuffer::setExpectedLength(const uint16_t len)
-            {
-                expectedLength = len;
-            }
-
             uint8_t *CommandBuffer::getBuffer()
             {
                 return buffer;
             }
 
-            uint16_t CommandBuffer::getLength()
+            uint16_t CommandBuffer::getBufferLength()
             {
                 return position;
             }
 
             bool CommandBuffer::isComplete()
             {
-                return buffer[0] != 0 && position == expectedLength;
+                return buffer[0] != 0 && position == getPayloadLength() + 3;
             }
 
             uint8_t *CommandBuffer::getPayload()
             {
-                return buffer + 1;
+                return buffer + 3;
             }
 
-            uint16_t CommandBuffer::appendFragment(const uint8_t *data, const uint16_t len)
+            uint16_t CommandBuffer::getPayloadLength()
             {
-                if (position + len > MAX_LENGTH)
-                {
-                    return 0;
-                }
-
-                memcpy(buffer + position + 1, data, len);
-                position += len;
-
-                return len;
+                return FROM_BIG_ENDIAN(buffer[1], buffer[2]);
             }
 
         } // namespace BLE

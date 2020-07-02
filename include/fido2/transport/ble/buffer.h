@@ -14,26 +14,20 @@ namespace FIDO2
                 static const uint16_t MAX_LENGTH = 2048;
 
             public:
-                void reset();
-
-                void setCmd(const uint8_t cmd);
-                uint8_t getCmd();
-
-                void setExpectedLength(const uint16_t len);
-                uint16_t getExpectedLength();
+                uint16_t init(const uint8_t *data, const uint16_t len);
+                uint16_t append(const uint8_t *data, const uint16_t len);
 
                 uint8_t *getBuffer();
-                uint16_t getLength();
+                uint16_t getBufferLength();
 
                 bool isComplete();
-                uint8_t *getPayload();
 
-            public:
-                uint16_t appendFragment(const uint8_t *data, const uint16_t len);
+                uint8_t getCmd();
+                uint16_t getPayloadLength();
+                uint8_t *getPayload();
 
             protected:
                 uint8_t buffer[MAX_LENGTH];
-                uint16_t expectedLength;
                 uint16_t position;
             };
 
