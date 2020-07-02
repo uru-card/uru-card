@@ -3,6 +3,7 @@
 #include <BLESecurity.h>
 
 #include "ble/security.h"
+#include "ble/device.h"
 #include "fido2/transport/ble/service.h"
 
 #define GATT_DEVICE_NAME "URU Card"
@@ -25,6 +26,7 @@ namespace BLE
 
         // BLE Server
         server = BLEDevice::createServer();
+        server->setCallbacks(new Server());
 
         // Device Info Service
         pDeviceInfoService = server->createService((uint16_t)ESP_GATT_UUID_DEVICE_INFO_SVC);
@@ -60,5 +62,9 @@ namespace BLE
 
         BLEDevice::startAdvertising();
     }
+
+    void Server::onConnect(BLEServer *pServer) {}
+
+    void Server::onDisconnect(BLEServer *pServer) {}
 
 } // namespace BLE

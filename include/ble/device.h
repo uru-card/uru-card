@@ -9,4 +9,10 @@ namespace BLE
     void init();
 
     void start();
+
+    class Server : public BLEServerCallbacks
+    {
+        void onConnect(BLEServer *pServer);
+        void onDisconnect(BLEServer *pServer);
+    };
 } // namespace BLE

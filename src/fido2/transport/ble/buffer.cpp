@@ -12,50 +12,55 @@ namespace FIDO2
 
             void CommandBuffer::reset()
             {
-                cmd = 0;
-                length = 0;
-                pos = 0;
+                buffer[0] = 0;
+                expectedLength = 0;
+                position = 0;
             }
 
-            void CommandBuffer::setCmd(const uint8_t _cmd)
+            void CommandBuffer::setCmd(const uint8_t cmd)
             {
-                cmd = _cmd;
+                buffer[0] = cmd;
             }
 
             uint8_t CommandBuffer::getCmd()
             {
-                return cmd;
+                return buffer[0];
             }
 
-            void CommandBuffer::setLength(const uint16_t len)
+            void CommandBuffer::setExpectedLength(const uint16_t len)
             {
-                length = len;
+                expectedLength = len;
+            }
+
+            uint8_t *CommandBuffer::getBuffer()
+            {
+                return buffer;
             }
 
             uint16_t CommandBuffer::getLength()
             {
-                return length;
+                return position;
             }
 
             bool CommandBuffer::isComplete()
             {
-                return cmd != 0 && pos == length;
+                return buffer[0] != 0 && position == expectedLength;
             }
 
             uint8_t *CommandBuffer::getPayload()
             {
-                return payload;
+                return buffer + 1;
             }
 
             uint16_t CommandBuffer::appendFragment(const uint8_t *data, const uint16_t len)
             {
-                if (pos + len > MAX_LENGTH)
+                if (position + len > MAX_LENGTH)
                 {
                     return 0;
                 }
 
-                memcpy(payload + pos, data, len);
-                pos += len;
+                memcpy(buffer + position + 1, data, len);
+                position += len;
 
                 return len;
             }

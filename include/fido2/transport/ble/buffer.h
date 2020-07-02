@@ -19,19 +19,22 @@ namespace FIDO2
                 void setCmd(const uint8_t cmd);
                 uint8_t getCmd();
 
-                void setLength(const uint16_t len);
+                void setExpectedLength(const uint16_t len);
+                uint16_t getExpectedLength();
+
+                uint8_t *getBuffer();
                 uint16_t getLength();
 
                 bool isComplete();
                 uint8_t *getPayload();
 
+            public:
                 uint16_t appendFragment(const uint8_t *data, const uint16_t len);
 
             protected:
-                uint8_t cmd;
-                uint8_t payload[MAX_LENGTH - 1];
-                uint16_t length;
-                uint16_t pos;
+                uint8_t buffer[MAX_LENGTH];
+                uint16_t expectedLength;
+                uint16_t position;
             };
 
             extern CommandBuffer commandBuffer;

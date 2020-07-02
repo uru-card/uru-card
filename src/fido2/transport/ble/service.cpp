@@ -20,6 +20,8 @@ namespace FIDO2
         {
             BLEService *Service::fido2Service = NULL;
 
+            BLECharacteristic *statusCharacteristic = NULL;
+
             BLEUUID Service::UUID()
             {
                 return BLEUUID((uint16_t)0xFFFD);
@@ -35,9 +37,9 @@ namespace FIDO2
                     ->setCallbacks(new ControlPoint());
 
                 // FIDO Status
-                fido2Service
-                    ->createCharacteristic(Status::UUID(), BLECharacteristic::PROPERTY_NOTIFY)
-                    ->addDescriptor(new BLE2902());
+                statusCharacteristic = fido2Service
+                                           ->createCharacteristic(Status::UUID(), BLECharacteristic::PROPERTY_NOTIFY);
+                statusCharacteristic->addDescriptor(new BLE2902());
 
                 // FIDO Control Point Length
                 fido2Service
@@ -75,8 +77,8 @@ namespace FIDO2
                     // The start of an initialization fragment is indicated by setting the high bit in the first byte.
 
                     // The subsequent two bytes indicate the total length of the frame, in big-endian order.
-                    uint16_t length = FROM_BIG_ENDIAN(value[1], value[2]);
-                    if (length > CommandBuffer::MAX_LENGTH)
+                    uint16_t expectedLength = FROM_BIG_ENDIAN(value[1], value[2]);
+                    if (expectedLength > CommandBuffer::MAX_LENGTH)
                     {
                     }
 
@@ -84,7 +86,7 @@ namespace FIDO2
                     commandBuffer.reset();
 
                     commandBuffer.setCmd(cmd);
-                    commandBuffer.setLength(length);
+                    commandBuffer.setExpectedLength(expectedLength);
 
                     if (commandBuffer.appendFragment((const uint8_t *)value.c_str() + 3, value.length() - 3) == 0)
                     {
@@ -104,8 +106,24 @@ namespace FIDO2
                 if (commandBuffer.isComplete())
                 {
                     Serial.printf("Received command 0x%02x with payload\n", commandBuffer.getCmd());
+                    serialDumpBuffer(commandBuffer.getPayload(), commandBuffer.getLength() - 1);
 
-                    serialDumpBuffer(commandBuffer.getPayload(), commandBuffer.getLength());
+                    processCommand();
+                }
+            }
+
+            void ControlPoint::processCommand()
+            {
+                switch (commandBuffer.getCmd())
+                {
+                case CMD_PING:
+                    statusCharacteristic->setValue(commandBuffer.getBuffer(), commandBuffer.getLength());
+                    statusCharacteristic->notify();
+                    break;
+                case CMD_MSG:
+                    break;
+                case CMD_CANCEL:
+                    break;
                 }
             }
 
