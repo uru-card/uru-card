@@ -4,8 +4,10 @@ namespace FIDO2
 {
     namespace CTAP
     {
-        enum Command
+        enum CommandCode
         {
+            authenticatorError = -1,
+            authenticatorNoCommand = 0x00,
             authenticatorMakeCredential = 0x01,
             authenticatorGetAssertion = 0x02,
             authenticatorGetInfo = 0x04,
@@ -71,30 +73,41 @@ namespace FIDO2
             CTAP2_ERR_VENDOR_LAST = 0xFF,           // Vendor specific error.
         };
 
-        class Request
+        class Command
         {
         public:
-            virtual Command getCommand() = 0;
+            virtual CommandCode getCommandCode();
         };
 
-        class RequestGetInfo : public Request
+        class CommandError : public Command
         {
         public:
-            virtual Command getCommand();
+            virtual CommandCode getCommandCode();
+
+        public:
+            CommandError(Status errorCode);
+
+            Status getErrorCode();
+
+        private:
+            Status errorCode;
         };
 
-        Status parseRequest(const uint8_t *data, const uint16_t length, Request **request);
-
-        Status parseRequestGetInfo(const uint8_t *data, const uint16_t length, Request **request);
-
-        class Response
+        class RequestGetInfo : public Command
         {
+        public:
+            virtual CommandCode getCommandCode();
         };
 
-        class ResponseGetInfo : public Response
+        Command parseRequest(const uint8_t *data, const uint16_t length);
+
+        class ResponseGetInfo : public Command
         {
+        public:
+            virtual CommandCode getCommandCode();
         };
 
-        uint16_t encodeResponse(Response *response, uint8_t *data, uint16_t length);
+        Status encodeResponse(Command &response, uint8_t *data, uint16_t *len);
+
     } // namespace CTAP
 } // namespace FIDO2

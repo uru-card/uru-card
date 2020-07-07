@@ -6,9 +6,11 @@ namespace FIDO2
 {
     namespace Authenticator
     {
-        int processRequestGetInfo(FIDO2::CTAP::Request *request, FIDO2::CTAP::Response **response)
+        FIDO2::CTAP::ResponseGetInfo processRequestGetInfo(FIDO2::CTAP::RequestGetInfo &request)
         {
-            return 0;
+            FIDO2::CTAP::ResponseGetInfo response;
+
+            return response;
         }
     } // namespace Authenticator
 } // namespace FIDO2

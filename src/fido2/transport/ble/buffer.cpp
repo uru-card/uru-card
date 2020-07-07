@@ -68,6 +68,12 @@ namespace FIDO2
                 return FROM_BIG_ENDIAN(buffer[1], buffer[2]);
             }
 
+            void CommandBuffer::setPayloadLength(uint16_t length)
+            {
+                buffer[1] = (length >> 8) & 0xFF;
+                buffer[2] = length & 0xFF;
+            }
+
         } // namespace BLE
     }     // namespace Transport
 } // namespace FIDO2

@@ -24,6 +24,7 @@ namespace FIDO2
 
                 uint8_t getCmd();
                 uint16_t getPayloadLength();
+                void setPayloadLength(uint16_t length);
                 uint8_t *getPayload();
 
             protected:

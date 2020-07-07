@@ -6,18 +6,20 @@ namespace FIDO2
 {
     namespace Authenticator
     {
-        int processRequest(FIDO2::CTAP::Request *request, FIDO2::CTAP::Response **response)
+        FIDO2::CTAP::Command processRequest(FIDO2::CTAP::Command &request)
         {
-            switch (request->getCommand())
+            Serial.println(__FUNCTION__);
+
+            switch (request.getCommandCode())
             {
             case FIDO2::CTAP::authenticatorGetInfo:
-                return processRequestGetInfo(request, response);
+                return processRequestGetInfo((FIDO2::CTAP::RequestGetInfo &)request);
             default:
                 // error
                 break;
             }
 
-            return 0;
+            return FIDO2::CTAP::CommandError(FIDO2::CTAP::CTAP1_ERR_INVALID_COMMAND);
         }
 
     } // namespace Authenticator

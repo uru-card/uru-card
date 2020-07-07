@@ -125,25 +125,29 @@ namespace FIDO2
             void ControlPoint::processMessage()
             {
                 // parse the request
-                FIDO2::CTAP::Request *request = NULL;
-                int parseResult = FIDO2::CTAP::parseRequest(commandBuffer.getPayload(), commandBuffer.getPayloadLength(), &request);
-                if (parseResult)
+                FIDO2::CTAP::Command request = FIDO2::CTAP::parseRequest(commandBuffer.getPayload(), commandBuffer.getPayloadLength());
+                if (request.getCommandCode() == FIDO2::CTAP::authenticatorError)
                 {
                     // could not parse, respond with the error
                     return;
                 }
 
                 // execute
-                FIDO2::CTAP::Response *response = NULL;
-                int execResult = FIDO2::Authenticator::processRequest(request, &response);
-                if (execResult)
+                FIDO2::CTAP::Command response = FIDO2::Authenticator::processRequest(request);
+                if (response.getCommandCode() == FIDO2::CTAP::authenticatorError)
                 {
                     // could not process, respond with the error
                     return;
                 }
 
                 // encode the response
-                uint16_t encodedLength = FIDO2::CTAP::encodeResponse(response, commandBuffer.getPayload(), commandBuffer.getBufferLength() - 3);
+                uint16_t encodedLength = commandBuffer.getBufferLength() - 3;
+                FIDO2::CTAP::Status encodeResult = FIDO2::CTAP::encodeResponse(response, commandBuffer.getPayload(), &encodedLength);
+                commandBuffer.setPayloadLength(encodedLength);
+
+                //
+                Serial.printf("Processed command 0x%02x with payload\n", commandBuffer.getCmd());
+                serialDumpBuffer(commandBuffer.getPayload(), commandBuffer.getPayloadLength());
 
                 // send the response back
                 statusCharacteristic->setValue(commandBuffer.getBuffer(), encodedLength + 3);
