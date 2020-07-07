@@ -15,7 +15,7 @@ void serialDumpBuffer(uint8_t *buffer, uint16_t len)
         for (auto i = 0; i < pageSize; i++)
         {
             const uint16_t pos = page * pageSize + i;
-            if (pos > len)
+            if (pos >= len)
                 break;
 
             Serial.printf("%02x ", buffer[pos]);

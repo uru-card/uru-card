@@ -8,6 +8,10 @@
 #include "fido2/transport/ble/buffer.h"
 #include "fido2/transport/ble/service.h"
 
+#include "fido2/ctap/ctap.h"
+
+#include "fido2/authenticator/authenticator.h"
+
 #include "util.h"
 
 #define FIDO2_CONTROL_POINT_LENGTH 32
@@ -98,11 +102,11 @@ namespace FIDO2
                     Serial.printf("Received command 0x%02x with payload\n", commandBuffer.getCmd());
                     serialDumpBuffer(commandBuffer.getPayload(), commandBuffer.getPayloadLength());
 
-                    processCommand();
+                    processRequest();
                 }
             }
 
-            void ControlPoint::processCommand()
+            void ControlPoint::processRequest()
             {
                 switch (commandBuffer.getCmd())
                 {
@@ -111,10 +115,39 @@ namespace FIDO2
                     statusCharacteristic->notify();
                     break;
                 case CMD_MSG:
+                    processMessage();
                     break;
                 case CMD_CANCEL:
                     break;
                 }
+            }
+
+            void ControlPoint::processMessage()
+            {
+                // parse the request
+                FIDO2::CTAP::Request *request = NULL;
+                int parseResult = FIDO2::CTAP::parseRequest(commandBuffer.getPayload(), commandBuffer.getPayloadLength(), &request);
+                if (parseResult)
+                {
+                    // could not parse, respond with the error
+                    return;
+                }
+
+                // execute
+                FIDO2::CTAP::Response *response = NULL;
+                int execResult = FIDO2::Authenticator::processRequest(request, &response);
+                if (execResult)
+                {
+                    // could not process, respond with the error
+                    return;
+                }
+
+                // encode the response
+                uint16_t encodedLength = FIDO2::CTAP::encodeResponse(response, commandBuffer.getPayload(), commandBuffer.getBufferLength() - 3);
+
+                // send the response back
+                statusCharacteristic->setValue(commandBuffer.getBuffer(), encodedLength + 3);
+                statusCharacteristic->notify();
             }
 
             BLEUUID Status::UUID()

@@ -23,7 +23,9 @@ namespace FIDO2
 
                 virtual void onWrite(BLECharacteristic *pCharacteristic);
 
-                void processCommand();
+                void processRequest();
+
+                void processMessage();
             };
 
             class ControlPointLength : public BLECharacteristicCallbacks
