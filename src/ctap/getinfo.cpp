@@ -6,6 +6,11 @@ namespace FIDO2
 {
     namespace CTAP
     {
+        Command RequestGetInfo::getCommand()
+        {
+            return authenticatorGetInfo;
+        }
+
         Status parseRequestGetInfo(const uint8_t *data, const uint16_t length, Request **request)
         {
             // validate

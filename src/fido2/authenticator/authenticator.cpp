@@ -11,7 +11,7 @@ namespace FIDO2
             switch (request->getCommand())
             {
             case FIDO2::CTAP::authenticatorGetInfo:
-                return processRequestGetInfo((FIDO2::CTAP::RequestGetInfo *)request, (FIDO2::CTAP::ResponseGetInfo **)response);
+                return processRequestGetInfo(request, response);
             default:
                 // error
                 break;

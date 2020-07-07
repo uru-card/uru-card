@@ -74,12 +74,13 @@ namespace FIDO2
         class Request
         {
         public:
-            Command getCommand();
+            virtual Command getCommand() = 0;
         };
 
         class RequestGetInfo : public Request
         {
         public:
+            virtual Command getCommand();
         };
 
         Status parseRequest(const uint8_t *data, const uint16_t length, Request **request);
