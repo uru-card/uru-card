@@ -8,6 +8,15 @@ namespace FIDO2
     {
         int processRequest(FIDO2::CTAP::Request *request, FIDO2::CTAP::Response **response)
         {
+            switch (request->getCommand())
+            {
+            case FIDO2::CTAP::authenticatorGetInfo:
+                return processRequestGetInfo((FIDO2::CTAP::RequestGetInfo *)request, (FIDO2::CTAP::ResponseGetInfo **)response);
+            default:
+                // error
+                break;
+            }
+
             return 0;
         }
 

@@ -6,9 +6,18 @@ namespace FIDO2
 {
     namespace CTAP
     {
-        int parseRequest(uint8_t *data, uint16_t len, Request **request)
+
+        Status parseRequest(const uint8_t *data, const uint16_t len, Request **request)
         {
-            return 0;
+            switch (data[0])
+            {
+            case authenticatorGetInfo:
+                return parseRequestGetInfo(data, len, request);
+            default:
+                break;
+            }
+
+            return CTAP1_ERR_INVALID_COMMAND;
         }
 
         uint16_t encodeResponse(Response *response, uint8_t *data, uint16_t len)
