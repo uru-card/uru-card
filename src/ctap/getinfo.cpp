@@ -13,14 +13,12 @@ namespace FIDO2
             return authenticatorGetInfo;
         }
 
-        Command parseRequestGetInfo(const uint8_t *data, const uint16_t length)
+        Command *parseRequestGetInfo(const uint8_t *data, const uint16_t length)
         {
-            Serial.println(__FUNCTION__);
-
             // validate
 
             //
-            return RequestGetInfo();
+            return new RequestGetInfo();
         }
 
         CommandCode ResponseGetInfo::getCommandCode()
@@ -28,22 +26,25 @@ namespace FIDO2
             return authenticatorGetInfo;
         }
 
-        Status encodeResponseGetInfo(ResponseGetInfo &response, uint8_t *data, uint16_t *length)
+        std::vector<String> &ResponseGetInfo::getVersions()
         {
-            Serial.println(__FUNCTION__);
+            return versions;
+        }
 
+        Status encodeResponse(ResponseGetInfo *response, uint8_t *data, uint16_t *length)
+        {
             CBORPair cbor = CBORPair(100);
 
             // List of supported versions.
             CBORArray versions = CBORArray();
-            versions.append("FIDO_2_0");
-
+            for (auto it = response->getVersions().begin(); it != response->getVersions().end(); it++)
+            {
+                versions.append((*it).c_str());
+            }
             cbor.append(0x01, versions);
 
-            //
+            // finalize the encoding
             *length = cbor.length();
-
-            //
             memcpy(data, cbor.to_CBOR(), *length);
 
             return CTAP2_OK;

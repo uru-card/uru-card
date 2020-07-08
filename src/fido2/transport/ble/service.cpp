@@ -1,3 +1,5 @@
+#include <memory>
+
 #include <Arduino.h>
 
 #include <BLE2902.h>
@@ -22,9 +24,9 @@ namespace FIDO2
     {
         namespace BLE
         {
-            BLEService *Service::fido2Service = NULL;
+            BLEService *Service::fido2Service = nullptr;
 
-            BLECharacteristic *statusCharacteristic = NULL;
+            BLECharacteristic *statusCharacteristic = nullptr;
 
             BLEUUID Service::UUID()
             {
@@ -125,16 +127,16 @@ namespace FIDO2
             void ControlPoint::processMessage()
             {
                 // parse the request
-                FIDO2::CTAP::Command request = FIDO2::CTAP::parseRequest(commandBuffer.getPayload(), commandBuffer.getPayloadLength());
-                if (request.getCommandCode() == FIDO2::CTAP::authenticatorError)
+                std::unique_ptr<FIDO2::CTAP::Command> request(FIDO2::CTAP::parseRequest(commandBuffer.getPayload(), commandBuffer.getPayloadLength()));
+                if (request->getCommandCode() == FIDO2::CTAP::authenticatorError)
                 {
                     // could not parse, respond with the error
                     return;
                 }
 
                 // execute
-                FIDO2::CTAP::Command response = FIDO2::Authenticator::processRequest(request);
-                if (response.getCommandCode() == FIDO2::CTAP::authenticatorError)
+                std::unique_ptr<FIDO2::CTAP::Command> response(FIDO2::Authenticator::processRequest(request.get()));
+                if (response->getCommandCode() == FIDO2::CTAP::authenticatorError)
                 {
                     // could not process, respond with the error
                     return;
@@ -142,7 +144,7 @@ namespace FIDO2
 
                 // encode the response
                 uint16_t encodedLength = commandBuffer.getBufferLength() - 3;
-                FIDO2::CTAP::Status encodeResult = FIDO2::CTAP::encodeResponse(response, commandBuffer.getPayload(), &encodedLength);
+                FIDO2::CTAP::Status encodeResult = FIDO2::CTAP::encodeResponse(response.get(), commandBuffer.getPayload(), &encodedLength);
                 commandBuffer.setPayloadLength(encodedLength);
 
                 //

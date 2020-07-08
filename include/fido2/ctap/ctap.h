@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 namespace FIDO2
 {
     namespace CTAP
@@ -76,7 +78,7 @@ namespace FIDO2
         class Command
         {
         public:
-            virtual CommandCode getCommandCode();
+            virtual CommandCode getCommandCode() = 0;
         };
 
         class CommandError : public Command
@@ -99,15 +101,21 @@ namespace FIDO2
             virtual CommandCode getCommandCode();
         };
 
-        Command parseRequest(const uint8_t *data, const uint16_t length);
-
         class ResponseGetInfo : public Command
         {
         public:
             virtual CommandCode getCommandCode();
+
+        public:
+            std::vector<String> &getVersions();
+
+        private:
+            std::vector<String> versions;
         };
 
-        Status encodeResponse(Command &response, uint8_t *data, uint16_t *len);
+        Command *parseRequest(const uint8_t *data, const uint16_t length);
+
+        Status encodeResponse(Command *response, uint8_t *data, uint16_t *len);
 
     } // namespace CTAP
 } // namespace FIDO2

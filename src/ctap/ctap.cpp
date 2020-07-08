@@ -21,12 +21,10 @@ namespace FIDO2
             this->errorCode = errorCode;
         }
 
-        Command parseRequestGetInfo(const uint8_t *data, const uint16_t len);
+        Command* parseRequestGetInfo(const uint8_t *data, const uint16_t len);
 
-        Command parseRequest(const uint8_t *data, const uint16_t len)
+        Command* parseRequest(const uint8_t *data, const uint16_t len)
         {
-            Serial.println(__FUNCTION__);
-
             switch (data[0])
             {
             case authenticatorGetInfo:
@@ -35,21 +33,19 @@ namespace FIDO2
                 break;
             }
 
-            return CommandError(CTAP1_ERR_INVALID_COMMAND);
+            return new CommandError(CTAP1_ERR_INVALID_COMMAND);
         }
 
-        Status encodeResponseGetInfo(ResponseGetInfo &response, uint8_t *data, uint16_t *len);
+        Status encodeResponse(ResponseGetInfo *response, uint8_t *data, uint16_t *len);
 
-        Status encodeResponse(Command &response, uint8_t *data, uint16_t *len)
+        Status encodeResponse(Command *response, uint8_t *data, uint16_t *len)
         {
-            Serial.println(__FUNCTION__);
-
-            switch (response.getCommandCode())
+            switch (response->getCommandCode())
             {
             case authenticatorError:
                 return CTAP1_ERR_INVALID_COMMAND;
             case authenticatorGetInfo:
-                return encodeResponseGetInfo((ResponseGetInfo &)response, data, len);
+                return encodeResponse((ResponseGetInfo *)response, data, len);
             default:
                 break;
             }

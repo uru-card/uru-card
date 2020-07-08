@@ -12,9 +12,9 @@
 
 namespace BLE
 {
-    BLEServer *server = NULL;
+    BLEServer *server = nullptr;
 
-    BLEService *pDeviceInfoService = NULL;
+    BLEService *pDeviceInfoService = nullptr;
 
     void init()
     {
