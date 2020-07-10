@@ -16,7 +16,7 @@
 
 #include "util.h"
 
-#define FIDO2_CONTROL_POINT_LENGTH 32
+#define FIDO2_CONTROL_POINT_LENGTH 256
 
 namespace FIDO2
 {
@@ -148,7 +148,7 @@ namespace FIDO2
                 commandBuffer.setPayloadLength(encodedLength);
 
                 //
-                Serial.printf("Processed command 0x%02x with payload\n", commandBuffer.getCmd());
+                Serial.println("Responding with payload");
                 serialDumpBuffer(commandBuffer.getPayload(), commandBuffer.getPayloadLength());
 
                 // send the response back
