@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include <BLEUUID.h>
+
 namespace FIDO2
 {
     namespace CTAP
@@ -108,9 +110,13 @@ namespace FIDO2
 
         public:
             std::vector<String> &getVersions();
+            std::vector<String> &getExtensions();
+            BLEUUID& getAAGUID();
 
         private:
             std::vector<String> versions;
+            std::vector<String> extensions;
+            BLEUUID aaguid;
         };
 
         Command *parseRequest(const uint8_t *data, const uint16_t length);
