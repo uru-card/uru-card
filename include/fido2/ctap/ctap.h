@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include <BLEUUID.h>
+#include "fido2/uuid.h"
 
 namespace FIDO2
 {
@@ -111,17 +111,19 @@ namespace FIDO2
         public:
             std::vector<String> &getVersions();
             std::vector<String> &getExtensions();
-            BLEUUID& getAAGUID();
+
+            void setAAGUID(FIDO2::UUID aaguid);
+            FIDO2::UUID getAAGUID();
 
         private:
             std::vector<String> versions;
             std::vector<String> extensions;
-            BLEUUID aaguid;
+            FIDO2::UUID aaguid;
         };
 
-        Command *parseRequest(const uint8_t *data, const uint16_t length);
+        Command *parseRequest(const uint8_t *data, const size_t length);
 
-        Status encodeResponse(Command *response, uint8_t *data, uint16_t *len);
+        Status encodeResponse(Command *response, uint8_t *data, size_t &len);
 
     } // namespace CTAP
 } // namespace FIDO2

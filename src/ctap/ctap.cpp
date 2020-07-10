@@ -21,9 +21,9 @@ namespace FIDO2
             this->errorCode = errorCode;
         }
 
-        Command* parseRequestGetInfo(const uint8_t *data, const uint16_t len);
+        Command *parseRequestGetInfo(const uint8_t *data, const size_t len);
 
-        Command* parseRequest(const uint8_t *data, const uint16_t len)
+        Command *parseRequest(const uint8_t *data, const size_t len)
         {
             switch (data[0])
             {
@@ -36,9 +36,9 @@ namespace FIDO2
             return new CommandError(CTAP1_ERR_INVALID_COMMAND);
         }
 
-        Status encodeResponse(ResponseGetInfo *response, uint8_t *data, uint16_t *len);
+        Status encodeResponse(ResponseGetInfo *response, uint8_t *data, size_t &len);
 
-        Status encodeResponse(Command *response, uint8_t *data, uint16_t *len)
+        Status encodeResponse(Command *response, uint8_t *data, size_t &len)
         {
             switch (response->getCommandCode())
             {

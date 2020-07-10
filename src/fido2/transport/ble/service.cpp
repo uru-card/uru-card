@@ -143,8 +143,8 @@ namespace FIDO2
                 }
 
                 // encode the response
-                uint16_t encodedLength = commandBuffer.getBufferLength() - 3;
-                FIDO2::CTAP::Status encodeResult = FIDO2::CTAP::encodeResponse(response.get(), commandBuffer.getPayload(), &encodedLength);
+                size_t encodedLength = commandBuffer.getMaxBufferLength() - 3;
+                FIDO2::CTAP::Status encodeResult = FIDO2::CTAP::encodeResponse(response.get(), commandBuffer.getPayload(), encodedLength);
                 commandBuffer.setPayloadLength(encodedLength);
 
                 //

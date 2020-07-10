@@ -19,6 +19,7 @@ namespace FIDO2
 
                 uint8_t *getBuffer();
                 uint16_t getBufferLength();
+                size_t getMaxBufferLength();
 
                 bool isComplete();
 

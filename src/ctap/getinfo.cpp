@@ -3,6 +3,7 @@
 #include <YACL.h>
 
 #include "fido2/ctap/ctap.h"
+#include "util.h"
 
 namespace FIDO2
 {
@@ -13,7 +14,7 @@ namespace FIDO2
             return authenticatorGetInfo;
         }
 
-        Command *parseRequestGetInfo(const uint8_t *data, const uint16_t length)
+        Command *parseRequestGetInfo(const uint8_t *data, const size_t length)
         {
             // validate
 
@@ -36,31 +37,47 @@ namespace FIDO2
             return extensions;
         }
 
-        BLEUUID &ResponseGetInfo::getAAGUID()
+        void ResponseGetInfo::setAAGUID(FIDO2::UUID _aaguid)
+        {
+            aaguid = _aaguid;
+        }
+
+        FIDO2::UUID ResponseGetInfo::getAAGUID()
         {
             return aaguid;
         }
 
-        Status encodeResponse(ResponseGetInfo *response, uint8_t *data, uint16_t *length)
+        Status encodeResponse(ResponseGetInfo *response, uint8_t *data, size_t &length)
         {
-            CBORPair cbor = CBORPair(100);
+            // use external buffer?
+            CBORPair cbor = CBORPair();
 
             // List of supported versions.
-            CBORArray versions = CBORArray();
-            for (auto it = response->getVersions().begin(); it != response->getVersions().end(); it++)
+            if (response->getVersions().size() > 0)
             {
-                versions.append((*it).c_str());
+                CBORArray versions = CBORArray();
+                for (auto it = response->getVersions().begin(); it != response->getVersions().end(); it++)
+                {
+                    versions.append((*it).c_str());
+                }
+                cbor.append(0x01, versions);
             }
-            cbor.append(0x01, versions);
 
-            // List of supported extensions
-            CBORArray extensions = CBORArray();
-            cbor.append(0x02, extensions);
+            // // List of supported extensions
+            if (response->getExtensions().size() > 0)
+            {
+                CBORArray extensions = CBORArray();
+                for (auto it = response->getExtensions().begin(); it != response->getExtensions().end(); it++)
+                {
+                    extensions.append((*it).c_str());
+                }
+                cbor.append(0x02, extensions);
+            }
 
             // AAGUID
-            // BLEUUID aaguid("63d9df31-662d-476a-a7a7-53b6aa038975");
-            // CBOR cbor_aaguid = CBOR(aaguid.getNative()->uuid.uuid128, 16);
-            // cbor.append(0x03, cbor_aaguid);
+            CBOR cbor_aaguid;
+            cbor_aaguid.encode(response->getAAGUID().bytes(), 16);
+            cbor.append(0x03, cbor_aaguid);
 
             // Map of options
             CBORPair options = CBORPair();
@@ -69,17 +86,15 @@ namespace FIDO2
             options.append("rk", true);
             options.append("up", false);
             options.append("uv", true);
-
             cbor.append(0x04, options);
 
-            // max msg size
+            // // max msg size
             cbor.append(0x05, 2048);
 
             // finalize the encoding
-            *length = cbor.length() + 1;
-
-            data[0] = 0;
-            memcpy(data + 1, cbor.to_CBOR(), *length);
+            data[0] = CTAP2_OK;
+            memcpy(data + 1, cbor.to_CBOR(), cbor.length());
+            length = cbor.length() + 1;
 
             return CTAP2_OK;
         }

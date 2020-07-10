@@ -12,7 +12,7 @@ namespace FIDO2
 
             response->getVersions().push_back("FIDO_2_0");
 
-            response->getAAGUID().fromString("63d9df31-662d-476a-a7a7-53b6aa038975");
+            response->setAAGUID(FIDO2::UUID("63d9df31-662d-476a-a7a7-53b6aa038975"));
 
             return response;
         }

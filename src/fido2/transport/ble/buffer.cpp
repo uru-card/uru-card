@@ -53,6 +53,11 @@ namespace FIDO2
                 return position;
             }
 
+            size_t CommandBuffer::getMaxBufferLength()
+            {
+                return MAX_LENGTH;
+            }
+
             bool CommandBuffer::isComplete()
             {
                 return buffer[0] != 0 && position == getPayloadLength() + 3;
