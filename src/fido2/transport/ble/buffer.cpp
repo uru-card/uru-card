@@ -77,6 +77,8 @@ namespace FIDO2
             {
                 buffer[1] = (length >> 8) & 0xFF;
                 buffer[2] = length & 0xFF;
+
+                position = length + 3;
             }
 
         } // namespace BLE

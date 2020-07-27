@@ -8,7 +8,7 @@
 void serialDumpBuffer(uint8_t *buffer, uint16_t len)
 {
     const uint16_t pageSize = 40;
-    uint16_t pages = len / pageSize + (len % pageSize) ? 1 : 0;
+    uint16_t pages = (len / pageSize) + ((len % pageSize) ? 1 : 0);
 
     for (auto page = 0; page < pages; page++)
     {

@@ -145,15 +145,57 @@ namespace FIDO2
                 // encode the response
                 size_t encodedLength = commandBuffer.getMaxBufferLength() - 3;
                 FIDO2::CTAP::Status encodeResult = FIDO2::CTAP::encodeResponse(response.get(), commandBuffer.getPayload(), encodedLength);
-                commandBuffer.setPayloadLength(encodedLength);
 
-                //
+                if (encodeResult != FIDO2::CTAP::CTAP2_OK)
+                {
+                    // respond with error
+                    sendError(encodeResult);
+                    return;
+                }
+
+                commandBuffer.setPayloadLength(encodedLength);
+                sendResponse();
+            }
+
+            void ControlPoint::sendResponse()
+            {
                 Serial.println("Responding with payload");
-                serialDumpBuffer(commandBuffer.getPayload(), commandBuffer.getPayloadLength());
+                serialDumpBuffer(commandBuffer.getPayload(), commandBuffer.getPayloadLength() - 1);
 
                 // send the response back
-                statusCharacteristic->setValue(commandBuffer.getBuffer(), encodedLength + 3);
-                statusCharacteristic->notify();
+                uint8_t sendBuffer[FIDO2_CONTROL_POINT_LENGTH];
+                size_t sent = 0;
+                size_t copySize, sendSize;
+                for (uint8_t seq = 0; sent < commandBuffer.getBufferLength(); seq++)
+                {
+                    if (seq == 0)
+                    {
+                        sendSize = MIN(FIDO2_CONTROL_POINT_LENGTH, commandBuffer.getBufferLength());
+                        memcpy(sendBuffer, commandBuffer.getBuffer(), sendSize);
+                        sent += sendSize;
+                    }
+                    else
+                    {
+                        sendBuffer[0] = seq - 1;
+
+                        copySize = MIN(FIDO2_CONTROL_POINT_LENGTH - 1, commandBuffer.getBufferLength() - sent);
+                        memcpy(sendBuffer + 1, commandBuffer.getBuffer() + sent, copySize);
+
+                        sent += copySize;
+                        sendSize = copySize + 1;
+                    }
+
+                    Serial.printf("seq: %d\n", seq);
+                    Serial.printf("size: %d\n", sendSize);
+                    serialDumpBuffer(sendBuffer, sendSize);
+
+                    statusCharacteristic->setValue(sendBuffer, sendSize);
+                    statusCharacteristic->notify();
+                }
+            }
+
+            void ControlPoint::sendError(uint8_t errorCode)
+            {
             }
 
             BLEUUID Status::UUID()

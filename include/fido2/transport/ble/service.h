@@ -26,6 +26,11 @@ namespace FIDO2
                 void processRequest();
 
                 void processMessage();
+
+            protected:
+                void sendResponse();
+
+                void sendError(uint8_t errorCode);
             };
 
             class ControlPointLength : public BLECharacteristicCallbacks
