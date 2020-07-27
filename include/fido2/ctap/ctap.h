@@ -103,6 +103,30 @@ namespace FIDO2
             virtual CommandCode getCommandCode();
         };
 
+        class RequestGetAssertion : public Command
+        {
+        public:
+            virtual CommandCode getCommandCode();
+        };
+
+        class RequestMakeCredential : public Command
+        {
+        public:
+            virtual CommandCode getCommandCode();
+        };
+
+        class RequestClientPIN : public Command
+        {
+        public:
+            virtual CommandCode getCommandCode();
+        };
+
+        class RequestReset : public Command
+        {
+        public:
+            virtual CommandCode getCommandCode();
+        };
+
         class ResponseGetInfo : public Command
         {
         public:
@@ -119,6 +143,30 @@ namespace FIDO2
             std::vector<String> versions;
             std::vector<String> extensions;
             FIDO2::UUID aaguid;
+        };
+
+        class ResponseGetAssertion : public Command
+        {
+        public:
+            virtual CommandCode getCommandCode();
+        };
+
+        class ResponseMakeCredential : public Command
+        {
+        public:
+            virtual CommandCode getCommandCode();
+        };
+
+        class ResponseClientPIN : public Command
+        {
+        public:
+            virtual CommandCode getCommandCode();
+        };
+
+        class ResponseReset : public Command
+        {
+        public:
+            virtual CommandCode getCommandCode();
         };
 
         Command *parseRequest(const uint8_t *data, const size_t length);
