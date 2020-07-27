@@ -1,5 +1,7 @@
 # URU Card - Arduino FIDO2 Authenticator
 
+![Travis CI project status](https://travis-ci.com/uru-card/uru-card.svg?branch=master)
+
 URU Card is an Arduino based FIDO2 Authenticator. This repository contains source code for the firmware.
 
 **Warning**: At the moment BLE transport is supported only by Windows and Chrome browser on Android.

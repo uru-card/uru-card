@@ -20,9 +20,14 @@ python:
     - "2.7"
 
 sudo: false
+
 cache:
     directories:
         - "~/.platformio"
+
+branches:
+  only:
+  - master
 
 install:
     - pip install -U platformio
