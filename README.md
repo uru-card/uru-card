@@ -1,6 +1,7 @@
 # URU Card - Arduino FIDO2 Authenticator
 
 [![Build Status](https://travis-ci.com/uru-card/uru-card.svg?branch=master)](https://travis-ci.com/uru-card/uru-card)
+[![Maintainability](https://api.codeclimate.com/v1/badges/f62968e1aea07e03c3d8/maintainability)](https://codeclimate.com/github/uru-card/uru-card/maintainability)
 
 URU Card is an Arduino based FIDO2 Authenticator. This repository contains source code for the firmware.
 
