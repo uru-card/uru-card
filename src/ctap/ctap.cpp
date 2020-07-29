@@ -1,3 +1,5 @@
+#include <memory>
+
 #include <Arduino.h>
 
 #include "fido2/ctap/ctap.h"
@@ -6,70 +8,46 @@ namespace FIDO2
 {
     namespace CTAP
     {
-        CommandCode Command::getCommandCode()
+        CommandCode Command::getCommandCode() const
         {
             return authenticatorNoCommand;
         }
 
-        CommandCode CommandError::getCommandCode()
-        {
-            return authenticatorError;
-        }
-
-        CommandError::CommandError(Status errorCode)
-        {
-            this->errorCode = errorCode;
-        }
-
-        Command *parseRequestGetInfo(const uint8_t *data, const size_t len);
-        Command *parseRequestGetAssertion(const uint8_t *data, const size_t len);
-        Command *parseRequestMakeCredential(const uint8_t *data, const size_t len);
-        Command *parseRequestClientPIN(const uint8_t *data, const size_t len);
-        Command *parseRequestReset(const uint8_t *data, const size_t len);
-
-        Command *parseRequest(const uint8_t *data, const size_t len)
+        Status parseRequest(const uint8_t *data, const size_t len, std::unique_ptr<Command> &request)
         {
             switch (data[0])
             {
             case authenticatorGetInfo:
-                return parseRequestGetInfo(data, len);
+                return parseRequestGetInfo(data + 1, len - 1, request);
             case authenticatorGetAssertion:
-                return parseRequestGetAssertion(data, len);
+                return parseRequestGetAssertion(data + 1, len - 1, request);
             case authenticatorMakeCredential:
-                return parseRequestMakeCredential(data, len);
+                return parseRequestMakeCredential(data + 1, len - 1, request);
             case authenticatorClientPIN:
-                return parseRequestClientPIN(data, len);
+                return parseRequestClientPIN(data + 1, len - 1, request);
             case authenticatorReset:
-                return parseRequestReset(data, len);
+                return parseRequestReset(data + 1, len - 1, request);
             default:
                 break;
             }
 
-            return new CommandError(CTAP1_ERR_INVALID_COMMAND);
+            return CTAP1_ERR_INVALID_COMMAND;
         }
 
-        Status encodeResponse(ResponseGetInfo *response, uint8_t *data, size_t &len);
-        Status encodeResponse(ResponseGetAssertion *response, uint8_t *data, size_t &len);
-        Status encodeResponse(ResponseMakeCredential *response, uint8_t *data, size_t &len);
-        Status encodeResponse(ResponseClientPIN *response, uint8_t *data, size_t &len);
-        Status encodeResponse(ResponseReset *response, uint8_t *data, size_t &len);
-
-        Status encodeResponse(Command *response, uint8_t *data, size_t &len)
+        Status encodeResponse(const Command *response, uint8_t *data, size_t &len)
         {
             switch (response->getCommandCode())
             {
-            case authenticatorError:
-                return CTAP1_ERR_INVALID_COMMAND;
             case authenticatorGetInfo:
-                return encodeResponse((ResponseGetInfo *)response, data, len);
+                return encodeResponse((Response::GetInfo *)response, data, len);
             case authenticatorGetAssertion:
-                return encodeResponse((ResponseGetAssertion *)response, data, len);
+                return encodeResponse((Response::GetAssertion *)response, data, len);
             case authenticatorMakeCredential:
-                return encodeResponse((ResponseMakeCredential *)response, data, len);
+                return encodeResponse((Response::MakeCredential *)response, data, len);
             case authenticatorClientPIN:
-                return encodeResponse((RequestClientPIN *)response, data, len);
+                return encodeResponse((Request::ClientPIN *)response, data, len);
             case authenticatorReset:
-                return encodeResponse((ResponseReset *)response, data, len);
+                return encodeResponse((Response::Reset *)response, data, len);
             default:
                 break;
             }

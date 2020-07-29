@@ -1,6 +1,9 @@
 #pragma once
 
+#include <memory>
 #include <vector>
+
+#include <YACL.h>
 
 #include "fido2/uuid.h"
 
@@ -27,7 +30,7 @@ namespace FIDO2
 
         enum Status
         {
-            CTAP2_OK = 0x00,                        //Indicates successful response.
+            CTAP2_OK = 0x00,                        // Indicates successful response.
             CTAP1_ERR_INVALID_COMMAND = 0x01,       // The command is not a valid CTAP command.
             CTAP1_ERR_INVALID_PARAMETER = 0x02,     // The command included an invalid parameter.
             CTAP1_ERR_INVALID_LENGTH = 0x03,        // Invalid message or item length.
@@ -77,101 +80,135 @@ namespace FIDO2
             CTAP2_ERR_VENDOR_LAST = 0xFF,           // Vendor specific error.
         };
 
+        struct PublicKeyCredentialRpEntity
+        {
+        };
+
+        struct PublicKeyCredentialUserEntity
+        {
+        };
+
+        struct PublicKeyCredentialDescriptor
+        {
+        };
+
         class Command
         {
         public:
-            virtual CommandCode getCommandCode() = 0;
+            virtual CommandCode getCommandCode() const = 0;
         };
 
-        class CommandError : public Command
+        namespace Request
         {
-        public:
-            virtual CommandCode getCommandCode();
+            class GetInfo : public Command
+            {
+            public:
+                virtual CommandCode getCommandCode() const;
+            };
 
-        public:
-            CommandError(Status errorCode);
+            class GetAssertion : public Command
+            {
+            public:
+                virtual CommandCode getCommandCode() const;
+            };
 
-            Status getErrorCode();
+            class MakeCredential : public Command
+            {
+            public:
+                enum MapKeys
+                {
+                    keyclientDataHash = 0x01,
+                    keyRp = 0x02,
+                    keyUser = 0x03,
+                    keyPubKeyCredParams = 0x04,
+                    keyExcludeList = 0x05,
+                    keyExtensions = 0x06,
+                    keyOptions = 0x07,
+                    keyPinUvAuthParam = 0x08,
+                    keyPinUvAuthProtocol = 0x09,
+                };
 
-        private:
-            Status errorCode;
-        };
+            public:
+                virtual CommandCode getCommandCode() const;
 
-        class RequestGetInfo : public Command
+            public:
+                uint8_t clientDataHash[32];
+                PublicKeyCredentialRpEntity rp;
+                PublicKeyCredentialUserEntity user;
+            };
+
+            class ClientPIN : public Command
+            {
+            public:
+                virtual CommandCode getCommandCode() const;
+            };
+
+            class Reset : public Command
+            {
+            public:
+                virtual CommandCode getCommandCode() const;
+            };
+        }; // namespace Request
+
+        namespace Response
         {
-        public:
-            virtual CommandCode getCommandCode();
-        };
+            class GetInfo : public Command
+            {
+            public:
+                virtual CommandCode getCommandCode() const;
 
-        class RequestGetAssertion : public Command
-        {
-        public:
-            virtual CommandCode getCommandCode();
-        };
+            public:
+                std::vector<String> versions;
+                std::vector<String> extensions;
+                FIDO2::UUID aaguid;
+            };
 
-        class RequestMakeCredential : public Command
-        {
-        public:
-            virtual CommandCode getCommandCode();
-        };
+            class GetAssertion : public Command
+            {
+            public:
+                virtual CommandCode getCommandCode() const;
+            };
 
-        class RequestClientPIN : public Command
-        {
-        public:
-            virtual CommandCode getCommandCode();
-        };
+            class MakeCredential : public Command
+            {
+            public:
+                virtual CommandCode getCommandCode() const;
+            };
 
-        class RequestReset : public Command
-        {
-        public:
-            virtual CommandCode getCommandCode();
-        };
+            class ClientPIN : public Command
+            {
+            public:
+                virtual CommandCode getCommandCode() const;
+            };
 
-        class ResponseGetInfo : public Command
-        {
-        public:
-            virtual CommandCode getCommandCode();
+            class Reset : public Command
+            {
+            public:
+                virtual CommandCode getCommandCode() const;
+            };
+        } // namespace Response
 
-        public:
-            std::vector<String> &getVersions();
-            std::vector<String> &getExtensions();
+        // parse the request
+        Status parseRequest(const uint8_t *data, const size_t length, std::unique_ptr<Command> &request);
 
-            void setAAGUID(FIDO2::UUID aaguid);
-            FIDO2::UUID getAAGUID();
+        Status parseRequestGetInfo(const uint8_t *data, const size_t len, std::unique_ptr<Command> &request);
+        Status parseRequestGetAssertion(const uint8_t *data, const size_t len, std::unique_ptr<Command> &request);
+        Status parseRequestMakeCredential(const uint8_t *data, const size_t len, std::unique_ptr<Command> &request);
+        Status parseRequestClientPIN(const uint8_t *data, const size_t len, std::unique_ptr<Command> &request);
+        Status parseRequestReset(const uint8_t *data, const size_t len, std::unique_ptr<Command> &request);
 
-        private:
-            std::vector<String> versions;
-            std::vector<String> extensions;
-            FIDO2::UUID aaguid;
-        };
+        // parse data structures
+        Status parseRpEntity(const CBOR &cbor, PublicKeyCredentialRpEntity *rp);
+        Status parseUserEntity(const CBOR &cbor, PublicKeyCredentialUserEntity *user);
 
-        class ResponseGetAssertion : public Command
-        {
-        public:
-            virtual CommandCode getCommandCode();
-        };
+        // encode the response
+        Status encodeResponse(const Command *response, uint8_t *data, size_t &len);
 
-        class ResponseMakeCredential : public Command
-        {
-        public:
-            virtual CommandCode getCommandCode();
-        };
-
-        class ResponseClientPIN : public Command
-        {
-        public:
-            virtual CommandCode getCommandCode();
-        };
-
-        class ResponseReset : public Command
-        {
-        public:
-            virtual CommandCode getCommandCode();
-        };
-
-        Command *parseRequest(const uint8_t *data, const size_t length);
-
-        Status encodeResponse(Command *response, uint8_t *data, size_t &len);
+        Status encodeResponse(const Response::GetInfo *response, uint8_t *data, size_t &len);
+        Status encodeResponse(const Response::GetAssertion *response, uint8_t *data, size_t &len);
+        Status encodeResponse(const Response::MakeCredential *response, uint8_t *data, size_t &len);
+        Status encodeResponse(const Response::ClientPIN *response, uint8_t *data, size_t &len);
+        Status encodeResponse(const Response::Reset *response, uint8_t *data, size_t &len);
 
     } // namespace CTAP
 } // namespace FIDO2

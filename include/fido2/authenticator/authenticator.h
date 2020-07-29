@@ -1,17 +1,19 @@
 #pragma once
 
+#include <memory>
+
 #include "fido2/ctap/ctap.h"
 
 namespace FIDO2
 {
     namespace Authenticator
     {
-        FIDO2::CTAP::Command *processRequest(FIDO2::CTAP::Command *request);
+        FIDO2::CTAP::Status processRequest(const FIDO2::CTAP::Command *request, std::unique_ptr<FIDO2::CTAP::Command> &response);
 
-        FIDO2::CTAP::ResponseGetInfo *processRequest(FIDO2::CTAP::RequestGetInfo *request);
-        FIDO2::CTAP::ResponseGetAssertion *processRequest(FIDO2::CTAP::RequestGetAssertion *request);
-        FIDO2::CTAP::ResponseMakeCredential *processRequest(FIDO2::CTAP::RequestMakeCredential *request);
-        FIDO2::CTAP::ResponseClientPIN *processRequest(FIDO2::CTAP::RequestClientPIN *request);
-        FIDO2::CTAP::ResponseReset *processRequest(FIDO2::CTAP::RequestReset *request);
+        FIDO2::CTAP::Status processRequest(const FIDO2::CTAP::Request::GetInfo *request, std::unique_ptr<FIDO2::CTAP::Command> &response);
+        FIDO2::CTAP::Status processRequest(const FIDO2::CTAP::Request::GetAssertion *request, std::unique_ptr<FIDO2::CTAP::Command> &response);
+        FIDO2::CTAP::Status processRequest(const FIDO2::CTAP::Request::MakeCredential *request, std::unique_ptr<FIDO2::CTAP::Command> &response);
+        FIDO2::CTAP::Status processRequest(const FIDO2::CTAP::Request::ClientPIN *request, std::unique_ptr<FIDO2::CTAP::Command> &response);
+        FIDO2::CTAP::Status processRequest(const FIDO2::CTAP::Request::Reset *request, std::unique_ptr<FIDO2::CTAP::Command> &response);
     } // namespace Authenticator
 } // namespace FIDO2

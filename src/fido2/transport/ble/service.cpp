@@ -127,32 +127,34 @@ namespace FIDO2
             void ControlPoint::processMessage()
             {
                 // parse the request
-                std::unique_ptr<FIDO2::CTAP::Command> request(FIDO2::CTAP::parseRequest(commandBuffer.getPayload(), commandBuffer.getPayloadLength()));
-                if (request->getCommandCode() == FIDO2::CTAP::authenticatorError)
+                std::unique_ptr<FIDO2::CTAP::Command> request;
+                FIDO2::CTAP::Status statusParse = FIDO2::CTAP::parseRequest(commandBuffer.getPayload(), commandBuffer.getPayloadLength(), request);
+                if (statusParse != FIDO2::CTAP::CTAP2_OK)
                 {
                     // could not parse, respond with the error
+                    sendError(statusParse);
                     return;
                 }
 
                 // execute
-                std::unique_ptr<FIDO2::CTAP::Command> response(FIDO2::Authenticator::processRequest(request.get()));
-                if (response->getCommandCode() == FIDO2::CTAP::authenticatorError)
+                std::unique_ptr<FIDO2::CTAP::Command> response;
+                FIDO2::CTAP::Status statusProcess = FIDO2::Authenticator::processRequest(request.get(), response);
+                if (statusProcess != FIDO2::CTAP::CTAP2_OK)
                 {
-                    // could not process, respond with the error
+                    sendError(statusProcess);
                     return;
                 }
 
                 // encode the response
                 size_t encodedLength = commandBuffer.getMaxBufferLength() - 3;
-                FIDO2::CTAP::Status encodeResult = FIDO2::CTAP::encodeResponse(response.get(), commandBuffer.getPayload(), encodedLength);
-
-                if (encodeResult != FIDO2::CTAP::CTAP2_OK)
+                FIDO2::CTAP::Status statusEncode = FIDO2::CTAP::encodeResponse(response.get(), commandBuffer.getPayload(), encodedLength);
+                if (statusEncode != FIDO2::CTAP::CTAP2_OK)
                 {
-                    // respond with error
-                    sendError(encodeResult);
+                    sendError(statusEncode);
                     return;
                 }
 
+                // send successful result
                 commandBuffer.setPayloadLength(encodedLength);
                 sendResponse();
             }
@@ -196,6 +198,7 @@ namespace FIDO2
 
             void ControlPoint::sendError(uint8_t errorCode)
             {
+                Serial.printf("Responding with error 0x%02d", errorCode);
             }
 
             BLEUUID Status::UUID()

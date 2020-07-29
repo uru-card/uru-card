@@ -10,7 +10,7 @@ namespace FIDO2
         UUID(const uint8_t *, const size_t);
         UUID(const UUID &);
 
-        const uint8_t *bytes();
+        const uint8_t *get_bytes() const;
 
     private:
         uint8_t uuid[16];

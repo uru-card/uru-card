@@ -6,11 +6,12 @@ namespace FIDO2
 {
     namespace Authenticator
     {
-        FIDO2::CTAP::ResponseReset *processRequest(FIDO2::CTAP::RequestReset *request)
+        FIDO2::CTAP::Status processRequest(const FIDO2::CTAP::Request::Reset *request, std::unique_ptr<FIDO2::CTAP::Command> &response)
         {
-            FIDO2::CTAP::ResponseReset *response = new FIDO2::CTAP::ResponseReset();
+            // FIDO2::CTAP::ResponseReset *response = new FIDO2::CTAP::ResponseReset();
 
-            return response;
+            // return response;
+            return FIDO2::CTAP::CTAP2_OK;
         }
     } // namespace Authenticator
 } // namespace FIDO2

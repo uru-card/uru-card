@@ -1,3 +1,5 @@
+#include <memory>
+
 #include <Arduino.h>
 
 #include <YACL.h>
@@ -9,22 +11,24 @@ namespace FIDO2
 {
     namespace CTAP
     {
-        CommandCode RequestClientPIN::getCommandCode()
+        CommandCode Request::ClientPIN::getCommandCode() const
         {
             return authenticatorClientPIN;
         }
 
-        Command *parseRequestClientPIN(const uint8_t *data, const size_t length)
+        Status parseRequestClientPIN(const uint8_t *data, const size_t len, std::unique_ptr<Command> &request)
         {
-            return new RequestClientPIN();
+            request = std::unique_ptr<Request::ClientPIN>(new Request::ClientPIN());
+
+            return CTAP2_OK;
         }
 
-        CommandCode ResponseClientPIN::getCommandCode()
+        CommandCode Response::ClientPIN::getCommandCode() const
         {
             return authenticatorClientPIN;
         }
 
-        Status encodeResponse(ResponseClientPIN *response, uint8_t *data, size_t &length)
+        Status encodeResponse(const Response::ClientPIN *response, uint8_t *data, size_t &len)
         {
             // use external buffer?
             CBORPair cbor = CBORPair();
@@ -32,7 +36,7 @@ namespace FIDO2
             // finalize the encoding
             data[0] = CTAP2_OK;
             memcpy(data + 1, cbor.to_CBOR(), cbor.length());
-            length = cbor.length() + 1;
+            len = cbor.length() + 1;
 
             return CTAP2_OK;
         }

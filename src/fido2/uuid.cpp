@@ -33,7 +33,7 @@ namespace FIDO2
         }
     }
 
-    const uint8_t *UUID::bytes()
+    const uint8_t *UUID::get_bytes() const
     {
         return uuid;
     }
