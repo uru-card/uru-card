@@ -84,7 +84,7 @@ namespace FIDO2
                 cborPair->append(0x05, response->maxMsgSize);
 
                 // finalize the encoding
-                cbor = std::unique_ptr<CBOR>(cborPair.release());
+                cbor = std::unique_ptr<CBOR>(new CBOR(*cborPair));
 
                 return CTAP2_OK;
             }

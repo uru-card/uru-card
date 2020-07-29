@@ -12,11 +12,13 @@ namespace FIDO2
         {
             Status parse(const uint8_t *data, const size_t len, std::unique_ptr<Command> &request)
             {
-                CommandCode commandCode = (CommandCode)data[0];
+                CBOR cbor;
+                if (len > 1)
+                {
+                    cbor = CBOR((uint8_t *)data + 1, len - 1, true);
+                }
 
-                CBOR cbor = CBOR((uint8_t *)data + 1, len - 1, true);
-
-                switch (commandCode)
+                switch ((CommandCode)data[0])
                 {
                 case authenticatorGetInfo:
                     return parseGetInfo(cbor, request);

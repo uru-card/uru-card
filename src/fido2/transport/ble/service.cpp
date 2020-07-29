@@ -16,7 +16,7 @@
 
 #include "util.h"
 
-#define FIDO2_CONTROL_POINT_LENGTH 256
+#define FIDO2_CONTROL_POINT_LENGTH 32
 
 namespace FIDO2
 {
@@ -134,6 +134,7 @@ namespace FIDO2
                     sendError(statusParse);
                     return;
                 }
+                assert(request != nullptr);
 
                 // execute
                 std::unique_ptr<FIDO2::CTAP::Command> response;
@@ -143,6 +144,7 @@ namespace FIDO2
                     sendError(statusProcess);
                     return;
                 }
+                assert(response != nullptr);
 
                 // encode the response
                 std::unique_ptr<CBOR> cborResponse;
@@ -156,12 +158,22 @@ namespace FIDO2
                 // send successful result
                 uint8_t *payload = commandBuffer.getPayload();
                 payload[0] = FIDO2::CTAP::CTAP2_OK;
-                memcpy(payload + 1, cborResponse->to_CBOR(), cborResponse->length());
-                commandBuffer.setPayloadLength(cborResponse->length() + 1);
+                if (cborResponse != nullptr && cborResponse->length() > 0)
+                {
+                    memcpy(payload + 1, cborResponse->to_CBOR(), cborResponse->length());
+                    commandBuffer.setPayloadLength(cborResponse->length() + 1);
+                }
+                else
+                {
+                    commandBuffer.setPayloadLength(1);
+                }
 
                 sendResponse();
             }
 
+            /**
+             * Send the response with splitting in frames of FIDO2_CONTROL_POINT_LENGTH size
+             */
             void ControlPoint::sendResponse()
             {
                 Serial.println("Responding with payload");

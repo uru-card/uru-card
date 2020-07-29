@@ -8,7 +8,7 @@ namespace FIDO2
     {
         FIDO2::CTAP::Status processRequest(const FIDO2::CTAP::Request::Reset *request, std::unique_ptr<FIDO2::CTAP::Command> &response)
         {
-            // FIDO2::CTAP::ResponseReset *response = new FIDO2::CTAP::ResponseReset();
+            response = std::unique_ptr<FIDO2::CTAP::Response::Reset>(new FIDO2::CTAP::Response::Reset());
 
             // return response;
             return FIDO2::CTAP::CTAP2_OK;
