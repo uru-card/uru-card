@@ -9,34 +9,33 @@ namespace FIDO2
 {
     namespace CTAP
     {
-        CommandCode Request::Reset::getCommandCode() const
+        namespace Request
         {
-            return authenticatorReset;
-        }
+            CommandCode Reset::getCommandCode() const
+            {
+                return authenticatorReset;
+            }
 
-        Status parseRequestReset(const uint8_t *data, const size_t len, std::unique_ptr<Command> &request)
+            Status parseReset(const CBOR &cbor, std::unique_ptr<Command> &request)
+            {
+                request = std::unique_ptr<Reset>(new Reset());
+
+                return CTAP2_OK;
+            }
+        } // namespace Request
+
+        namespace Response
         {
-            request = std::unique_ptr<Request::Reset>(new Request::Reset());
+            CommandCode Reset::getCommandCode() const
+            {
+                return authenticatorReset;
+            }
 
-            return CTAP2_OK;
-        }
+            Status encode(const Reset *response, std::unique_ptr<CBOR> &cbor)
+            {
+                return CTAP2_OK;
+            }
 
-        CommandCode Response::Reset::getCommandCode() const
-        {
-            return authenticatorReset;
-        }
-
-        Status encodeResponse(const Response::Reset *response, uint8_t *data, size_t &len)
-        {
-            // use external buffer?
-            CBORPair cbor = CBORPair();
-
-            // finalize the encoding
-            data[0] = CTAP2_OK;
-            memcpy(data + 1, cbor.to_CBOR(), cbor.length());
-            len = cbor.length() + 1;
-
-            return CTAP2_OK;
-        }
-    } // namespace CTAP
+        } // namespace Response
+    }     // namespace CTAP
 } // namespace FIDO2

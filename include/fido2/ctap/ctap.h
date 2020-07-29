@@ -13,7 +13,6 @@ namespace FIDO2
     {
         enum CommandCode
         {
-            authenticatorError = -1,
             authenticatorNoCommand = 0x00,
             authenticatorMakeCredential = 0x01,
             authenticatorGetAssertion = 0x02,
@@ -148,6 +147,19 @@ namespace FIDO2
             public:
                 virtual CommandCode getCommandCode() const;
             };
+
+            Status parse(const uint8_t *data, const size_t length, std::unique_ptr<Command> &request);
+
+            Status parseGetInfo(const CBOR &cbor, std::unique_ptr<Command> &request);
+            Status parseGetAssertion(const CBOR &cbor, std::unique_ptr<Command> &request);
+            Status parseMakeCredential(const CBOR &cbor, std::unique_ptr<Command> &request);
+            Status parseClientPIN(const CBOR &cbor, std::unique_ptr<Command> &request);
+            Status parseReset(const CBOR &cbor, std::unique_ptr<Command> &request);
+
+            // parse data structures
+            Status parseRpEntity(const CBOR &cbor, PublicKeyCredentialRpEntity *rp);
+            Status parseUserEntity(const CBOR &cbor, PublicKeyCredentialUserEntity *user);
+
         }; // namespace Request
 
         namespace Response
@@ -200,29 +212,16 @@ namespace FIDO2
             public:
                 virtual CommandCode getCommandCode() const;
             };
+
+            // encode the response
+            Status encode(const Command *response, std::unique_ptr<CBOR> &cbor);
+
+            Status encode(const Response::GetInfo *response, std::unique_ptr<CBOR> &cbor);
+            Status encode(const Response::GetAssertion *response, std::unique_ptr<CBOR> &cbor);
+            Status encode(const Response::MakeCredential *response, std::unique_ptr<CBOR> &cbor);
+            Status encode(const Response::ClientPIN *response, std::unique_ptr<CBOR> &cbor);
+            Status encode(const Response::Reset *response, std::unique_ptr<CBOR> &cbor);
         } // namespace Response
-
-        // parse the request
-        Status parseRequest(const uint8_t *data, const size_t length, std::unique_ptr<Command> &request);
-
-        Status parseRequestGetInfo(const uint8_t *data, const size_t len, std::unique_ptr<Command> &request);
-        Status parseRequestGetAssertion(const uint8_t *data, const size_t len, std::unique_ptr<Command> &request);
-        Status parseRequestMakeCredential(const uint8_t *data, const size_t len, std::unique_ptr<Command> &request);
-        Status parseRequestClientPIN(const uint8_t *data, const size_t len, std::unique_ptr<Command> &request);
-        Status parseRequestReset(const uint8_t *data, const size_t len, std::unique_ptr<Command> &request);
-
-        // parse data structures
-        Status parseRpEntity(const CBOR &cbor, PublicKeyCredentialRpEntity *rp);
-        Status parseUserEntity(const CBOR &cbor, PublicKeyCredentialUserEntity *user);
-
-        // encode the response
-        Status encodeResponse(const Command *response, uint8_t *data, size_t &len);
-
-        Status encodeResponse(const Response::GetInfo *response, uint8_t *data, size_t &len);
-        Status encodeResponse(const Response::GetAssertion *response, uint8_t *data, size_t &len);
-        Status encodeResponse(const Response::MakeCredential *response, uint8_t *data, size_t &len);
-        Status encodeResponse(const Response::ClientPIN *response, uint8_t *data, size_t &len);
-        Status encodeResponse(const Response::Reset *response, uint8_t *data, size_t &len);
 
     } // namespace CTAP
 } // namespace FIDO2

@@ -11,34 +11,34 @@ namespace FIDO2
 {
     namespace CTAP
     {
-        CommandCode Request::ClientPIN::getCommandCode() const
+        namespace Request
         {
-            return authenticatorClientPIN;
-        }
+            CommandCode ClientPIN::getCommandCode() const
+            {
+                return authenticatorClientPIN;
+            }
 
-        Status parseRequestClientPIN(const uint8_t *data, const size_t len, std::unique_ptr<Command> &request)
+            Status parseClientPIN(const CBOR &cbor, std::unique_ptr<Command> &request)
+            {
+                request = std::unique_ptr<Request::ClientPIN>(new Request::ClientPIN());
+
+                return CTAP2_OK;
+            }
+
+        } // namespace Request
+
+        namespace Response
         {
-            request = std::unique_ptr<Request::ClientPIN>(new Request::ClientPIN());
+            CommandCode ClientPIN::getCommandCode() const
+            {
+                return authenticatorClientPIN;
+            }
 
-            return CTAP2_OK;
-        }
+            Status encode(const ClientPIN *response, std::unique_ptr<CBOR> &cbor)
+            {
 
-        CommandCode Response::ClientPIN::getCommandCode() const
-        {
-            return authenticatorClientPIN;
-        }
-
-        Status encodeResponse(const Response::ClientPIN *response, uint8_t *data, size_t &len)
-        {
-            // use external buffer?
-            CBORPair cbor = CBORPair();
-
-            // finalize the encoding
-            data[0] = CTAP2_OK;
-            memcpy(data + 1, cbor.to_CBOR(), cbor.length());
-            len = cbor.length() + 1;
-
-            return CTAP2_OK;
-        }
-    } // namespace CTAP
+                return CTAP2_OK;
+            }
+        } // namespace Response
+    }     // namespace CTAP
 } // namespace FIDO2

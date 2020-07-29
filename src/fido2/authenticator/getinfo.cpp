@@ -14,7 +14,7 @@ namespace FIDO2
 
             resp->versions.push_back("FIDO_2_0");
 
-            resp->aaguid = "63d9df31-662d-476a-a7a7-53b6aa038975";
+            resp->aaguid = FIDO2::Authenticator::aaguid;
 
             resp->options.plat = false;
             resp->options.rk = true;

@@ -8,6 +8,8 @@ namespace FIDO2
 {
     namespace Authenticator
     {
+        const FIDO2::UUID aaguid("63d9df31-662d-476a-a7a7-53b6aa038975");
+
         FIDO2::CTAP::Status processRequest(const FIDO2::CTAP::Command *request, std::unique_ptr<FIDO2::CTAP::Command> &response)
         {
             switch (request->getCommandCode())

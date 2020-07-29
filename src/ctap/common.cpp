@@ -10,14 +10,22 @@ namespace FIDO2
 {
     namespace CTAP
     {
-        Status parseRpEntity(const CBOR &cbor, PublicKeyCredentialRpEntity *rp)
+        namespace Request
         {
-            return CTAP2_OK;
-        }
+            Status parseRpEntity(const CBOR &cbor, PublicKeyCredentialRpEntity *rp)
+            {
+                return CTAP2_OK;
+            }
 
-        Status parseUserEntity(const CBOR &cbor, PublicKeyCredentialUserEntity *user)
+            Status parseUserEntity(const CBOR &cbor, PublicKeyCredentialUserEntity *user)
+            {
+                return CTAP2_OK;
+            }
+        } // namespace Request
+
+        namespace Response
         {
-            return CTAP2_OK;
+
         }
     } // namespace CTAP
 } // namespace FIDO2

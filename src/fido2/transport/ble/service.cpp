@@ -128,10 +128,9 @@ namespace FIDO2
             {
                 // parse the request
                 std::unique_ptr<FIDO2::CTAP::Command> request;
-                FIDO2::CTAP::Status statusParse = FIDO2::CTAP::parseRequest(commandBuffer.getPayload(), commandBuffer.getPayloadLength(), request);
+                FIDO2::CTAP::Status statusParse = FIDO2::CTAP::Request::parse(commandBuffer.getPayload(), commandBuffer.getPayloadLength(), request);
                 if (statusParse != FIDO2::CTAP::CTAP2_OK)
                 {
-                    // could not parse, respond with the error
                     sendError(statusParse);
                     return;
                 }
@@ -146,8 +145,8 @@ namespace FIDO2
                 }
 
                 // encode the response
-                size_t encodedLength = commandBuffer.getMaxBufferLength() - 3;
-                FIDO2::CTAP::Status statusEncode = FIDO2::CTAP::encodeResponse(response.get(), commandBuffer.getPayload(), encodedLength);
+                std::unique_ptr<CBOR> cborResponse;
+                FIDO2::CTAP::Status statusEncode = FIDO2::CTAP::Response::encode(response.get(), cborResponse);
                 if (statusEncode != FIDO2::CTAP::CTAP2_OK)
                 {
                     sendError(statusEncode);
@@ -155,14 +154,18 @@ namespace FIDO2
                 }
 
                 // send successful result
-                commandBuffer.setPayloadLength(encodedLength);
+                uint8_t *payload = commandBuffer.getPayload();
+                payload[0] = FIDO2::CTAP::CTAP2_OK;
+                memcpy(payload + 1, cborResponse->to_CBOR(), cborResponse->length());
+                commandBuffer.setPayloadLength(cborResponse->length() + 1);
+
                 sendResponse();
             }
 
             void ControlPoint::sendResponse()
             {
                 Serial.println("Responding with payload");
-                serialDumpBuffer(commandBuffer.getPayload(), commandBuffer.getPayloadLength() - 1);
+                serialDumpBuffer(commandBuffer.getPayload(), commandBuffer.getPayloadLength());
 
                 // send the response back
                 uint8_t sendBuffer[FIDO2_CONTROL_POINT_LENGTH];
@@ -199,6 +202,12 @@ namespace FIDO2
             void ControlPoint::sendError(uint8_t errorCode)
             {
                 Serial.printf("Responding with error 0x%02d", errorCode);
+
+                uint8_t *payload = commandBuffer.getPayload();
+                payload[0] = errorCode;
+                commandBuffer.setPayloadLength(1);
+
+                sendResponse();
             }
 
             BLEUUID Status::UUID()

@@ -8,51 +8,56 @@ namespace FIDO2
 {
     namespace CTAP
     {
-        CommandCode Command::getCommandCode() const
+        namespace Request
         {
-            return authenticatorNoCommand;
-        }
-
-        Status parseRequest(const uint8_t *data, const size_t len, std::unique_ptr<Command> &request)
-        {
-            switch (data[0])
+            Status parse(const uint8_t *data, const size_t len, std::unique_ptr<Command> &request)
             {
-            case authenticatorGetInfo:
-                return parseRequestGetInfo(data + 1, len - 1, request);
-            case authenticatorGetAssertion:
-                return parseRequestGetAssertion(data + 1, len - 1, request);
-            case authenticatorMakeCredential:
-                return parseRequestMakeCredential(data + 1, len - 1, request);
-            case authenticatorClientPIN:
-                return parseRequestClientPIN(data + 1, len - 1, request);
-            case authenticatorReset:
-                return parseRequestReset(data + 1, len - 1, request);
-            default:
-                break;
+                CommandCode commandCode = (CommandCode)data[0];
+
+                CBOR cbor = CBOR((uint8_t *)data + 1, len - 1, true);
+
+                switch (commandCode)
+                {
+                case authenticatorGetInfo:
+                    return parseGetInfo(cbor, request);
+                case authenticatorGetAssertion:
+                    return parseGetAssertion(cbor, request);
+                case authenticatorMakeCredential:
+                    return parseMakeCredential(cbor, request);
+                case authenticatorClientPIN:
+                    return parseClientPIN(cbor, request);
+                case authenticatorReset:
+                    return parseReset(cbor, request);
+                default:
+                    break;
+                }
+
+                return CTAP1_ERR_INVALID_COMMAND;
             }
+        } // namespace Request
 
-            return CTAP1_ERR_INVALID_COMMAND;
-        }
-
-        Status encodeResponse(const Command *response, uint8_t *data, size_t &len)
+        namespace Response
         {
-            switch (response->getCommandCode())
+            Status encode(const Command *response, std::unique_ptr<CBOR> &cbor)
             {
-            case authenticatorGetInfo:
-                return encodeResponse((Response::GetInfo *)response, data, len);
-            case authenticatorGetAssertion:
-                return encodeResponse((Response::GetAssertion *)response, data, len);
-            case authenticatorMakeCredential:
-                return encodeResponse((Response::MakeCredential *)response, data, len);
-            case authenticatorClientPIN:
-                return encodeResponse((Request::ClientPIN *)response, data, len);
-            case authenticatorReset:
-                return encodeResponse((Response::Reset *)response, data, len);
-            default:
-                break;
-            }
+                switch (response->getCommandCode())
+                {
+                case authenticatorGetInfo:
+                    return encode((Response::GetInfo *)response, cbor);
+                case authenticatorGetAssertion:
+                    return encode((Response::GetAssertion *)response, cbor);
+                case authenticatorMakeCredential:
+                    return encode((Response::MakeCredential *)response, cbor);
+                case authenticatorClientPIN:
+                    return encode((Request::ClientPIN *)response, cbor);
+                case authenticatorReset:
+                    return encode((Response::Reset *)response, cbor);
+                default:
+                    break;
+                }
 
-            return CTAP1_ERR_INVALID_COMMAND;
-        }
-    } // namespace CTAP
+                return CTAP1_ERR_INVALID_COMMAND;
+            }
+        } // namespace Response
+    }     // namespace CTAP
 } // namespace FIDO2
