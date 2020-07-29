@@ -13,15 +13,15 @@ namespace FIDO2
             switch (request->getCommandCode())
             {
             case FIDO2::CTAP::authenticatorGetInfo:
-                return processRequest((FIDO2::CTAP::Request::GetInfo *)request, response);
+                return processRequest(static_cast<const FIDO2::CTAP::Request::GetInfo *>(request), response);
             case FIDO2::CTAP::authenticatorGetAssertion:
-                return processRequest((FIDO2::CTAP::Request::GetAssertion *)request, response);
+                return processRequest((const FIDO2::CTAP::Request::GetAssertion *)request, response);
             case FIDO2::CTAP::authenticatorMakeCredential:
-                return processRequest((FIDO2::CTAP::Request::MakeCredential *)request, response);
+                return processRequest((const FIDO2::CTAP::Request::MakeCredential *)request, response);
             case FIDO2::CTAP::authenticatorClientPIN:
-                return processRequest((FIDO2::CTAP::Request::ClientPIN *)request, response);
+                return processRequest((const FIDO2::CTAP::Request::ClientPIN *)request, response);
             case FIDO2::CTAP::authenticatorReset:
-                return processRequest((FIDO2::CTAP::Request::Reset *)request, response);
+                return processRequest((const FIDO2::CTAP::Request::Reset *)request, response);
             default:
                 break;
             }

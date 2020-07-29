@@ -62,15 +62,21 @@ namespace FIDO2
 
             // Map of options
             CBORPair options = CBORPair();
-            options.append("clientPin", true);
-            options.append("plat", false);
-            options.append("rk", true);
-            options.append("up", false);
-            options.append("uv", true);
+            if (response->options.clientPinSupported)
+            {
+                options.append("clientPin", response->options.clientPin);
+            }
+            options.append("plat", response->options.plat);
+            options.append("rk", response->options.rk);
+            options.append("up", response->options.up);
+            if (response->options.uvSupported)
+            {
+                options.append("uv", response->options.uv);
+            }
             cbor.append(0x04, options);
 
             // // max msg size
-            cbor.append(0x05, 2048);
+            cbor.append(0x05, response->maxMsgSize);
 
             // finalize the encoding
             data[0] = CTAP2_OK;

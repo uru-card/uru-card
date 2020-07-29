@@ -10,13 +10,23 @@ namespace FIDO2
     {
         FIDO2::CTAP::Status processRequest(const FIDO2::CTAP::Request::GetInfo *request, std::unique_ptr<FIDO2::CTAP::Command> &response)
         {
-            FIDO2::CTAP::Response::GetInfo *resp = new FIDO2::CTAP::Response::GetInfo();
+            std::unique_ptr<FIDO2::CTAP::Response::GetInfo> resp = std::unique_ptr<FIDO2::CTAP::Response::GetInfo>(new FIDO2::CTAP::Response::GetInfo());
 
             resp->versions.push_back("FIDO_2_0");
 
             resp->aaguid = "63d9df31-662d-476a-a7a7-53b6aa038975";
 
-            response = std::unique_ptr<FIDO2::CTAP::Command>(resp);
+            resp->options.plat = false;
+            resp->options.rk = true;
+            resp->options.clientPinSupported = true;
+            resp->options.clientPin = true;
+            resp->options.up = false;
+            resp->options.uvSupported = true;
+            resp->options.uv = true;
+
+            resp->maxMsgSize = 2048;
+
+            response = std::unique_ptr<FIDO2::CTAP::Command>(resp.release());
 
             return FIDO2::CTAP::CTAP2_OK;
         }

@@ -161,6 +161,20 @@ namespace FIDO2
                 std::vector<String> versions;
                 std::vector<String> extensions;
                 FIDO2::UUID aaguid;
+                struct
+                {
+                    bool plat : 1;
+                    bool rk : 1;
+                    bool clientPinSupported : 1;
+                    bool clientPin : 1;
+                    bool up : 1;
+                    bool uvSupported : 1;
+                    bool uv : 1;
+                    bool uvToken : 1;
+                    bool config : 1;
+                } options;
+
+                uint16_t maxMsgSize;
             };
 
             class GetAssertion : public Command
