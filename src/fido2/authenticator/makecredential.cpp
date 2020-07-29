@@ -10,6 +10,9 @@ namespace FIDO2
         {
             std::unique_ptr<FIDO2::CTAP::Response::MakeCredential> resp = std::unique_ptr<FIDO2::CTAP::Response::MakeCredential>(new FIDO2::CTAP::Response::MakeCredential());
 
+
+
+
             response = std::unique_ptr<FIDO2::CTAP::Command>(resp.release());
 
             // return response;

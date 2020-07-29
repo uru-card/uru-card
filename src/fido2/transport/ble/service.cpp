@@ -16,7 +16,7 @@
 
 #include "util.h"
 
-#define FIDO2_CONTROL_POINT_LENGTH 32
+#define FIDO2_CONTROL_POINT_LENGTH 256
 
 namespace FIDO2
 {

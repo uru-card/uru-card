@@ -96,17 +96,43 @@ namespace FIDO2
                     return CTAP2_ERR_MISSING_PARAMETER;
                 }
 
+                if (!cborKeyCredParms.is_array())
+                {
+                    return CTAP1_ERR_INVALID_PARAMETER;
+                }
+
                 // excludeList (0x05)
                 // A sequence of PublicKeyCredentialDescriptor structures
                 CBOR cborExcludeList = cborPair.find_by_key((uint8_t)Request::MakeCredential::keyExcludeList);
+                if (!cborExcludeList.is_null())
+                {
+                    if (!cborExcludeList.is_array())
+                    {
+                        return CTAP1_ERR_INVALID_PARAMETER;
+                    }
+                }
 
                 // extensions (0x06)
                 // Parameters to influence authenticator operation
                 CBOR cborExtensions = cborPair.find_by_key((uint8_t)Request::MakeCredential::keyExtensions);
+                if (!cborExtensions.is_null())
+                {
+                    if (!cborExtensions.is_array())
+                    {
+                        return CTAP1_ERR_INVALID_PARAMETER;
+                    }
+                }
 
                 // options (0x07)
                 // Parameters to influence authenticator operation
                 CBOR cborOptions = cborPair.find_by_key((uint8_t)Request::MakeCredential::keyOptions);
+                if (!cborOptions.is_null())
+                {
+                    if (!cborOptions.is_pair())
+                    {
+                        return CTAP1_ERR_INVALID_PARAMETER;
+                    }
+                }
 
                 // pinUvAuthParam (0x08)
                 // First 16 bytes of HMAC-SHA-256 of clientDataHash using pinUvAuthToken which platform got from the authenticator
