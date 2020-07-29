@@ -38,15 +38,17 @@ namespace FIDO2
                     return CTAP2_ERR_MISSING_PARAMETER;
                 }
 
-                if (cborClientDataHash.is_bytestring())
+                if (!cborClientDataHash.is_bytestring())
                 {
-                    if (cborClientDataHash.get_bytestring_len() != 32)
-                    {
-                        return CTAP1_ERR_INVALID_LENGTH;
-                    }
-
-                    cborClientDataHash.get_bytestring(rq->clientDataHash);
+                    return CTAP1_ERR_INVALID_PARAMETER;
                 }
+
+                if (cborClientDataHash.get_bytestring_len() != 32)
+                {
+                    return CTAP1_ERR_INVALID_LENGTH;
+                }
+
+                cborClientDataHash.get_bytestring(rq->clientDataHash);
 
                 // rp (0x02)
                 // This PublicKeyCredentialRpEntity data structure describes a Relying Party
