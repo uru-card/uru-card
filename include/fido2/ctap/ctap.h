@@ -141,6 +141,7 @@ namespace FIDO2
                 uint8_t clientDataHash[32];
                 PublicKeyCredentialRpEntity rp;
                 PublicKeyCredentialUserEntity user;
+                std::vector<int8_t> algorithms;
             };
 
             class ClientPIN : public Command

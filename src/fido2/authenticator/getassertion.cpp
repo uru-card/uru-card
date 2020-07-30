@@ -8,8 +8,11 @@ namespace FIDO2
     {
         FIDO2::CTAP::Status processRequest(const FIDO2::CTAP::Request::GetAssertion *request, std::unique_ptr<FIDO2::CTAP::Command> &response)
         {
-            // FIDO2::CTAP::ResponseGetAssertion *response = new FIDO2::CTAP::ResponseGetAssertion();
+            std::unique_ptr<FIDO2::CTAP::Response::GetAssertion> resp = std::unique_ptr<FIDO2::CTAP::Response::GetAssertion>(new FIDO2::CTAP::Response::GetAssertion());
 
+            response = std::unique_ptr<FIDO2::CTAP::Command>(resp.release());
+
+            // return response;
             return FIDO2::CTAP::CTAP2_OK;
         }
     } // namespace Authenticator

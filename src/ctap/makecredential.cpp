@@ -53,15 +53,12 @@ namespace FIDO2
 
                     //
                     CBOR cborAlg = paramPair.find_by_key("alg");
-                    if (!(cborAlg.is_int8() || cborAlg.is_int16()))
+                    if (!cborAlg.is_int8())
                     {
                         return CTAP2_ERR_MISSING_PARAMETER;
                     }
 
-                    if ((int16_t)cborAlg != -7)
-                    {
-                        return CTAP2_ERR_UNSUPPORTED_ALGORITHM;
-                    }
+                    request->algorithms.push_back(cborAlg);
                 }
 
                 return CTAP2_OK;

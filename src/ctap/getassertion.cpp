@@ -18,9 +18,20 @@ namespace FIDO2
                 return authenticatorGetAssertion;
             }
 
-            Status parseGetAssertion(const CBOR &bor, std::unique_ptr<Command> &request)
+            Status parseGetAssertion(const CBOR &cbor, std::unique_ptr<Command> &request)
             {
-                request = std::unique_ptr<GetAssertion>(new GetAssertion());
+                Serial.println("Parse GetAssertion");
+
+                if (!cbor.is_pair())
+                {
+                    return CTAP2_ERR_INVALID_CBOR;
+                }
+
+                CBORPair &cborPair = (CBORPair &)cbor;
+
+                std::unique_ptr<GetAssertion> rq(new GetAssertion());
+
+                request = std::unique_ptr<Command>(rq.release());
 
                 return CTAP2_OK;
             }
