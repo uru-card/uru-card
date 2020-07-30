@@ -81,10 +81,17 @@ namespace FIDO2
 
         struct PublicKeyCredentialRpEntity
         {
+            String id;
+            String name;
+            String icon;
         };
 
         struct PublicKeyCredentialUserEntity
         {
+            String id;
+            String name;
+            String displayName;
+            String icon;
         };
 
         struct PublicKeyCredentialDescriptor

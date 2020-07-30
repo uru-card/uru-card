@@ -117,7 +117,7 @@ namespace FIDO2
                 CBOR cborExtensions = cborPair.find_by_key((uint8_t)Request::MakeCredential::keyExtensions);
                 if (!cborExtensions.is_null())
                 {
-                    if (!cborExtensions.is_array())
+                    if (!cborExtensions.is_pair())
                     {
                         return CTAP1_ERR_INVALID_PARAMETER;
                     }
