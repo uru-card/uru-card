@@ -88,7 +88,7 @@ namespace FIDO2
 
         struct PublicKeyCredentialUserEntity
         {
-            String id;
+            uint8_t id[64];
             String name;
             String displayName;
             String icon;

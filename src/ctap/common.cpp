@@ -67,11 +67,11 @@ namespace FIDO2
 
                 //
                 CBOR cborId = cborPair.find_by_key("id");
-                if (!cborId.is_string())
+                if (!cborId.is_bytestring())
                 {
                     return CTAP2_ERR_INVALID_CBOR;
                 }
-                cborId.get_string(user->id);
+                cborId.get_bytestring(user->id);
 
                 //
                 CBOR cborName = cborPair.find_by_key("name");
