@@ -10,6 +10,10 @@ namespace FIDO2
     {
         const FIDO2::UUID aaguid("63d9df31-662d-476a-a7a7-53b6aa038975");
 
+        const uint8_t certificate[] = {0x00};
+
+        const size_t certificateSize = sizeof(certificate);
+
         FIDO2::CTAP::Status processRequest(const FIDO2::CTAP::Command *request, std::unique_ptr<FIDO2::CTAP::Command> &response)
         {
             switch (request->getCommandCode())
