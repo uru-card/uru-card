@@ -79,6 +79,48 @@ namespace FIDO2
             CTAP2_ERR_VENDOR_LAST = 0xFF,           // Vendor specific error.
         };
 
+#pragma pack(push, 1)
+        union uint16_be_t
+        {
+            struct
+            {
+                uint8_t h;
+                uint8_t l;
+            } be;
+            uint16_t val;
+        };
+
+        union AuthenticatorDataFlags
+        {
+            struct flag_bitfields
+            {
+                bool userPresent : 1;
+                uint8_t rfu1 : 1;
+                bool userVerified : 1;
+                uint8_t rfu2 : 3;
+                bool attestationData : 1;
+                bool extensions : 1;
+            } f;
+            uint8_t val;
+        };
+
+        struct AttestedCredentialData
+        {
+            uint8_t aaguid[16];
+            uint16_be_t credentialIdLen;
+            uint8_t credentialId[4];
+            uint8_t publicKey[77];
+        };
+
+        struct AuthenticatorData
+        {
+            uint8_t rpIdHash[32];
+            AuthenticatorDataFlags flags;
+            uint32_t signCount;
+            AttestedCredentialData attestedCredentialData;
+        };
+#pragma pack(pop)
+
         struct PublicKeyCredentialRpEntity
         {
             String id;
@@ -207,6 +249,10 @@ namespace FIDO2
             {
             public:
                 virtual CommandCode getCommandCode() const;
+
+            public:
+                AuthenticatorData authenticatorData;
+                uint8_t signature[72];
             };
 
             class ClientPIN : public Command

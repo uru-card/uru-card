@@ -1,10 +1,12 @@
+#include <memory>
+
 #include <Arduino.h>
 
 #include <YACL.h>
 
+#include "fido2/authenticator/authenticator.h"
 #include "fido2/ctap/ctap.h"
 #include "util.h"
-#include <memory>
 
 namespace FIDO2
 {
@@ -247,6 +249,39 @@ namespace FIDO2
 
             Status encode(const MakeCredential *response, std::unique_ptr<CBOR> &cbor)
             {
+                // use external buffer?
+                std::unique_ptr<CBORPair> cborPair(new CBORPair());
+
+                // fmt (0x01)
+                cborPair->append(0x01, "packed");
+
+                // authData (0x02)
+                CBOR cborAuthData;
+                cborAuthData.encode((uint8_t*)&response->authenticatorData, sizeof(AuthenticatorData));
+                cborPair->append(0x02, cborAuthData);
+
+                // attStmt (0x03)
+                CBORPair cborAttStmt;
+                cborAttStmt.append("alg", -7);
+
+                CBOR cborSignature;
+                cborSignature.encode(response->signature, 72);
+                cborAttStmt.append("sig", cborSignature);
+
+                CBORArray cborCertificates;
+
+                CBOR cborCertificate;
+                cborCertificate.encode(FIDO2::Authenticator::certificate, FIDO2::Authenticator::certificateSize);
+
+                cborCertificates.append(cborCertificate);
+
+                cborAttStmt.append("x5c", cborCertificates);
+
+                cborPair->append(0x03, cborAttStmt);
+
+                // finalize the encoding
+                cbor = std::unique_ptr<CBOR>(new CBOR(*cborPair));
+
                 return CTAP2_OK;
             }
         } // namespace Response

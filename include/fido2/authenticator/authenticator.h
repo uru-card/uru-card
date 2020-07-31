@@ -9,7 +9,16 @@ namespace FIDO2
 {
     namespace Authenticator
     {
+        // AAGUID
         extern const FIDO2::UUID aaguid;
+
+        // Certificate
+        extern const uint8_t certificate[];
+        extern const size_t certificateSize;
+
+        // Public Key
+        extern const uint8_t publicKey[];
+        extern const size_t publicKeySize;
 
         FIDO2::CTAP::Status processRequest(const FIDO2::CTAP::Command *request, std::unique_ptr<FIDO2::CTAP::Command> &response);
 
