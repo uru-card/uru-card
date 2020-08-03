@@ -108,7 +108,7 @@ namespace FIDO2
         {
             uint8_t aaguid[16];
             uint16_be_t credentialIdLen;
-            uint8_t credentialId[4];
+            uint8_t credentialId[16];
             uint8_t publicKey[77];
         };
 
