@@ -60,7 +60,8 @@ namespace FIDO2
                         return CTAP2_ERR_MISSING_PARAMETER;
                     }
 
-                    request->algorithms.push_back((int8_t)cborAlg);
+                    int8_t alg = cborAlg;
+                    request->algorithms.push_back(alg);
                 }
 
                 return CTAP2_OK;
