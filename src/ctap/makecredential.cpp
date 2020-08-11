@@ -265,7 +265,7 @@ namespace FIDO2
                 cborAttStmt.append("alg", -7);
 
                 CBOR cborSignature;
-                cborSignature.encode(response->signature, 72);
+                cborSignature.encode(response->signature, response->signatureSize);
                 cborAttStmt.append("sig", cborSignature);
 
                 CBORArray cborCertificates;

@@ -253,6 +253,7 @@ namespace FIDO2
             public:
                 AuthenticatorData authenticatorData;
                 uint8_t signature[72];
+                size_t signatureSize;
             };
 
             class ClientPIN : public Command

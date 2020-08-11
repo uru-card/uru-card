@@ -9,8 +9,16 @@ namespace Crypto
 
     namespace ECDSA
     {
-        void sign(const uint8_t *data, const size_t length, uint8_t *signature);
+        struct PublicKey
+        {
+            uint8_t x[32];
+            uint8_t y[32];
+        };
 
-        void encodeSignature(const uint8_t *signature, uint8_t *encodedSignature);
+        void getPublicKey(PublicKey* publicKey);
+
+        void sign(const uint8_t *hash, uint8_t *signature);
+
+        void encodeSignature(const uint8_t *signature, uint8_t *encodedSignature, size_t* encodedSize);
     } // namespace ECDSA
 } // namespace Crypto
