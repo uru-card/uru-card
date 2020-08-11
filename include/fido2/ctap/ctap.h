@@ -79,7 +79,7 @@ namespace FIDO2
             CTAP2_ERR_VENDOR_LAST = 0xFF,           // Vendor specific error.
         };
 
-#pragma pack(push, 1)
+        #pragma pack(push, 1)
         union uint16_be_t
         {
             struct
@@ -119,7 +119,7 @@ namespace FIDO2
             uint32_t signCount;
             AttestedCredentialData attestedCredentialData;
         };
-#pragma pack(pop)
+        #pragma pack(pop)
 
         struct PublicKeyCredentialRpEntity
         {
@@ -157,7 +157,23 @@ namespace FIDO2
             class GetAssertion : public Command
             {
             public:
+                enum MapKeys
+                {
+                    keyRpId = 0x01,
+                    keyClientDataHash = 0x02,
+                    keyAllowList = 0x03,
+                    keyExtensions = 0x04,
+                    keyOptions = 0x05,
+                    keyPinUvAuthParam = 0x06,
+                    keyPinUvAuthProtocol = 0x07,
+                };
+
+            public:
                 virtual CommandCode getCommandCode() const;
+
+            public:
+                String rpId;
+                uint8_t clientDataHash[32];
             };
 
             class MakeCredential : public Command
