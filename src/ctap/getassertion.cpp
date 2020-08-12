@@ -35,6 +35,28 @@ namespace FIDO2
                     {
                         return CTAP2_ERR_CBOR_UNEXPECTED_TYPE;
                     }
+
+                    std::unique_ptr<PublicKeyCredentialDescriptor> cd(new PublicKeyCredentialDescriptor());
+
+                    //
+                    CBOR cborType = param.find_by_key("type");
+                    if (!cborType.is_string())
+                    {
+                        return CTAP2_ERR_INVALID_CBOR;
+                    }
+
+                    cborType.get_string(cd->type);
+
+                    //
+                    CBOR cborId = param.find_by_key("id");
+                    if(!cborId.is_bytestring() || cborId.get_bytestring_len() > CREDENTIAL_ID_LENGTH)
+                    {
+                        return CTAP2_ERR_INVALID_CBOR;
+                    }
+
+                    cborId.get_bytestring(cd->credentialId);
+
+                    request->allowList.push_back(std::move(cd));
                 }
 
                 return CTAP2_OK;

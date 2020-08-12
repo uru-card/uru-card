@@ -79,6 +79,8 @@ namespace FIDO2
             CTAP2_ERR_VENDOR_LAST = 0xFF,           // Vendor specific error.
         };
 
+        #define CREDENTIAL_ID_LENGTH 16
+
         #pragma pack(push, 1)
         union uint16_be_t
         {
@@ -108,7 +110,7 @@ namespace FIDO2
         {
             uint8_t aaguid[16];
             uint16_be_t credentialIdLen;
-            uint8_t credentialId[16];
+            uint8_t credentialId[CREDENTIAL_ID_LENGTH];
             uint8_t publicKey[77];
         };
 
@@ -138,6 +140,8 @@ namespace FIDO2
 
         struct PublicKeyCredentialDescriptor
         {
+            String type;
+            uint8_t credentialId[CREDENTIAL_ID_LENGTH];
         };
 
         class Command
@@ -174,6 +178,7 @@ namespace FIDO2
             public:
                 String rpId;
                 uint8_t clientDataHash[32];
+                std::vector<std::unique_ptr<PublicKeyCredentialDescriptor>> allowList;
             };
 
             class MakeCredential : public Command

@@ -90,8 +90,7 @@ namespace FIDO2
 
             //
             Crypto::ECDSA::PublicKey publicKey;
-
-
+            Crypto::ECDSA::getPublicKey(&publicKey);
 
 
             // fill authenticator data structure
