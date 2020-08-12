@@ -15,7 +15,7 @@ namespace FIDO2
 
             uint16_t CommandBuffer::init(const uint8_t *data, const uint16_t length)
             {
-                if (length > MAX_LENGTH)
+                if (length > FIDO2_MAX_MSG_SIZE)
                 {
                     return 0;
                 }
@@ -28,7 +28,7 @@ namespace FIDO2
 
             uint16_t CommandBuffer::append(const uint8_t *data, const uint16_t length)
             {
-                if (position + length - 1 > MAX_LENGTH)
+                if (position + length - 1 > FIDO2_MAX_MSG_SIZE)
                 {
                     return 0;
                 }
@@ -56,7 +56,7 @@ namespace FIDO2
 
             size_t CommandBuffer::getMaxBufferLength()
             {
-                return MAX_LENGTH;
+                return FIDO2_MAX_MSG_SIZE;
             }
 
             bool CommandBuffer::isComplete()

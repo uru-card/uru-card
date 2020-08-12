@@ -83,16 +83,6 @@ namespace FIDO2
         };
 
 #pragma pack(push, 1)
-        // union uint16_be_t
-        // {
-        //     struct
-        //     {
-        //         uint8_t h;
-        //         uint8_t l;
-        //     } be;
-        //     uint16_t val;
-        // };
-
         union AuthenticatorDataFlags
         {
             struct flag_bitfields

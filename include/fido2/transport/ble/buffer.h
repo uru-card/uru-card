@@ -2,6 +2,8 @@
 
 #include <Arduino.h>
 
+#include "config.h"
+
 namespace FIDO2
 {
     namespace Transport
@@ -10,9 +12,6 @@ namespace FIDO2
         {
             class CommandBuffer
             {
-            public:
-                static const uint16_t MAX_LENGTH = 2048;
-
             public:
                 uint16_t init(const uint8_t *data, const uint16_t len);
                 uint16_t append(const uint8_t *data, const uint16_t len);
@@ -29,7 +28,7 @@ namespace FIDO2
                 uint8_t *getPayload();
 
             protected:
-                uint8_t buffer[MAX_LENGTH];
+                uint8_t buffer[FIDO2_MAX_MSG_SIZE];
                 uint16_t position;
             };
 

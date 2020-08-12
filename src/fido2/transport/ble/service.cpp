@@ -6,17 +6,12 @@
 #include <BLEService.h>
 
 #include "ble/device.h"
-
+#include "config.h"
+#include "fido2/authenticator/authenticator.h"
+#include "fido2/ctap/ctap.h"
 #include "fido2/transport/ble/buffer.h"
 #include "fido2/transport/ble/service.h"
-
-#include "fido2/ctap/ctap.h"
-
-#include "fido2/authenticator/authenticator.h"
-
 #include "util.h"
-
-#define FIDO2_CONTROL_POINT_LENGTH 256
 
 namespace FIDO2
 {
