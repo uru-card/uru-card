@@ -115,7 +115,32 @@ namespace FIDO2
 
         namespace Response
         {
+            void encodePublicKey(Crypto::ECDSA::PublicKey *publicKey, uint8_t *encodedKey)
+            {
+                // use external buffer?
+                CBORPair cborPair;
 
-        }
-    } // namespace CTAP
+                // kty: EC2 key type
+                cborPair.append(1, 2);
+
+                // alg: ES256 signature algorithm
+                cborPair.append(3, -7);
+
+                // crv: P-256 curve
+                cborPair.append(-1, 1);
+
+                // x-coordinate as byte string 32 bytes in length
+                CBOR cborX;
+                cborX.encode(publicKey->x, 32);
+                cborPair.append(-2, cborX);
+
+                // y-coordinate as byte string 32 bytes in length
+                CBOR cborY;
+                cborY.encode(publicKey->y, 32);
+                cborPair.append(-3, cborY);
+
+                memcpy(encodedKey, cborPair.to_CBOR(), cborPair.length());
+            }
+        } // namespace Response
+    }     // namespace CTAP
 } // namespace FIDO2

@@ -5,6 +5,7 @@
 
 #include <YACL.h>
 
+#include "crypto/crypto.h"
 #include "fido2/uuid.h"
 
 namespace FIDO2
@@ -79,9 +80,9 @@ namespace FIDO2
             CTAP2_ERR_VENDOR_LAST = 0xFF,           // Vendor specific error.
         };
 
-        #define CREDENTIAL_ID_LENGTH 16
+#define CREDENTIAL_ID_LENGTH 16
 
-        #pragma pack(push, 1)
+#pragma pack(push, 1)
         union uint16_be_t
         {
             struct
@@ -121,7 +122,7 @@ namespace FIDO2
             uint32_t signCount;
             AttestedCredentialData attestedCredentialData;
         };
-        #pragma pack(pop)
+#pragma pack(pop)
 
         struct PublicKeyCredentialRpEntity
         {
@@ -264,6 +265,15 @@ namespace FIDO2
             {
             public:
                 virtual CommandCode getCommandCode() const;
+
+            public:
+                PublicKeyCredentialDescriptor credential;
+                AuthenticatorData authenticatorData;
+                uint8_t signature[72];
+                size_t signatureSize;
+                PublicKeyCredentialUserEntity user;
+                int numberOfCredentials;
+                bool userSelected;
             };
 
             class MakeCredential : public Command
@@ -297,6 +307,9 @@ namespace FIDO2
             Status encode(const Response::MakeCredential *response, std::unique_ptr<CBOR> &cbor);
             Status encode(const Response::ClientPIN *response, std::unique_ptr<CBOR> &cbor);
             Status encode(const Response::Reset *response, std::unique_ptr<CBOR> &cbor);
+
+            void encodePublicKey(Crypto::ECDSA::PublicKey *publicKey, uint8_t *encodedKey);
+
         } // namespace Response
 
     } // namespace CTAP

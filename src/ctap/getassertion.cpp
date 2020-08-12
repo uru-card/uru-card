@@ -187,6 +187,30 @@ namespace FIDO2
 
             Status encode(const GetAssertion *response, std::unique_ptr<CBOR> &cbor)
             {
+                // use external buffer?
+                std::unique_ptr<CBORPair> cborPair(new CBORPair());
+
+                // credential (0x01)
+
+                // authData (0x02)
+                CBOR cborAuthData;
+                cborAuthData.encode((uint8_t*)&response->authenticatorData, sizeof(AuthenticatorData) - sizeof(AttestedCredentialData));
+                cborPair->append(0x02, cborAuthData);
+
+                // signature (0x03)
+                CBOR cborSignature;
+                cborSignature.encode(response->signature, response->signatureSize);
+                cborPair->append(0x03, cborSignature);
+
+                // user (0x04)
+
+                // numberOfCredentials (0x05)
+
+                // userSelected (0x06)
+
+                // finalize the encoding
+                cbor = std::unique_ptr<CBOR>(new CBOR(*cborPair));
+
                 return CTAP2_OK;
             }
 
