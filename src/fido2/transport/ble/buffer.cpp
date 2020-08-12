@@ -3,6 +3,7 @@
 #include "fido2/transport/ble/buffer.h"
 
 #include "util.h"
+#include "util/be.h"
 
 namespace FIDO2
 {
@@ -70,7 +71,7 @@ namespace FIDO2
 
             uint16_t CommandBuffer::getPayloadLength()
             {
-                return FROM_BIG_ENDIAN(buffer[1], buffer[2]);
+                return be_uint16_t(buffer + 1);
             }
 
             void CommandBuffer::setPayloadLength(uint16_t length)

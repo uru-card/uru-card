@@ -25,8 +25,7 @@ namespace FIDO2
             memcpy(resp->authenticatorData.attestedCredentialData.aaguid, aaguid.get_bytes(), 16);
 
             size_t credentialIdLength = sizeof(resp->authenticatorData.attestedCredentialData.credentialId);
-            resp->authenticatorData.attestedCredentialData.credentialIdLen.be.h = ((credentialIdLength >> 8) & 0xFF);
-            resp->authenticatorData.attestedCredentialData.credentialIdLen.be.l = (credentialIdLength & 0xFF);
+            resp->authenticatorData.attestedCredentialData.credentialIdLen = credentialIdLength;
 
             FIDO2::CTAP::Response::encodePublicKey(&publicKey, resp->authenticatorData.attestedCredentialData.publicKey);
 

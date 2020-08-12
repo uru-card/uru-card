@@ -5,8 +5,10 @@
 
 #include <YACL.h>
 
+#include "config.h"
 #include "crypto/crypto.h"
 #include "fido2/uuid.h"
+#include "util/be.h"
 
 namespace FIDO2
 {
@@ -80,18 +82,16 @@ namespace FIDO2
             CTAP2_ERR_VENDOR_LAST = 0xFF,           // Vendor specific error.
         };
 
-#define CREDENTIAL_ID_LENGTH 16
-
 #pragma pack(push, 1)
-        union uint16_be_t
-        {
-            struct
-            {
-                uint8_t h;
-                uint8_t l;
-            } be;
-            uint16_t val;
-        };
+        // union uint16_be_t
+        // {
+        //     struct
+        //     {
+        //         uint8_t h;
+        //         uint8_t l;
+        //     } be;
+        //     uint16_t val;
+        // };
 
         union AuthenticatorDataFlags
         {
@@ -110,7 +110,7 @@ namespace FIDO2
         struct AttestedCredentialData
         {
             uint8_t aaguid[16];
-            uint16_be_t credentialIdLen;
+            be_uint16_t credentialIdLen;
             uint8_t credentialId[CREDENTIAL_ID_LENGTH];
             uint8_t publicKey[77];
         };
