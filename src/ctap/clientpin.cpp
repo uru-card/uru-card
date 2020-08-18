@@ -89,6 +89,8 @@ namespace FIDO2
                     cborKey.append(1, 2);
 
                     // alg: algorithm ECDH-ES+HKDF-256
+                    // Note: The COSEAlgorithmIdentifier used is -25 (ECDH-ES + HKDF-256) although this is NOT the algorithm actually used.
+                    // Setting this to a different value may result in compatibility issues.
                     cborKey.append(3, -25);
 
                     // crv: P-256 curve

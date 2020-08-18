@@ -14,8 +14,11 @@ namespace FIDO2
             Serial.println("getKeyAgreement");
             std::unique_ptr<FIDO2::CTAP::Response::ClientPIN> resp = std::unique_ptr<FIDO2::CTAP::Response::ClientPIN>(new FIDO2::CTAP::Response::ClientPIN());
 
+            //
             resp->publicKey = std::unique_ptr<Crypto::ECDSA::PublicKey>(new Crypto::ECDSA::PublicKey());
+            Crypto::ECDSA::getPublicKey(resp->publicKey.get());
 
+            //
             response = std::unique_ptr<FIDO2::CTAP::Command>(resp.release());
 
             return FIDO2::CTAP::CTAP2_OK;
