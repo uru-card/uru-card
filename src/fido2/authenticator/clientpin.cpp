@@ -7,11 +7,22 @@ namespace FIDO2
     namespace Authenticator
     {
         // getPINRetries 0x01
+        FIDO2::CTAP::Status cmdGetPinRetries(std::unique_ptr<FIDO2::CTAP::Command> &response)
+        {
+            std::unique_ptr<FIDO2::CTAP::Response::ClientPIN> resp = std::unique_ptr<FIDO2::CTAP::Response::ClientPIN>(new FIDO2::CTAP::Response::ClientPIN());
+
+            //
+            resp->pinRetries = std::unique_ptr<uint8_t>(new uint8_t(8));
+
+            //
+            response = std::unique_ptr<FIDO2::CTAP::Command>(resp.release());
+
+            return FIDO2::CTAP::CTAP2_OK;
+        }
 
         // getKeyAgreement	0x02
         FIDO2::CTAP::Status cmdGetKeyAgreement(std::unique_ptr<FIDO2::CTAP::Command> &response)
         {
-            Serial.println("getKeyAgreement");
             std::unique_ptr<FIDO2::CTAP::Response::ClientPIN> resp = std::unique_ptr<FIDO2::CTAP::Response::ClientPIN>(new FIDO2::CTAP::Response::ClientPIN());
 
             //
@@ -25,14 +36,59 @@ namespace FIDO2
         }
 
         // setPIN	0x03
+        FIDO2::CTAP::Status cmdSetPin(const FIDO2::CTAP::Request::ClientPIN *request, std::unique_ptr<FIDO2::CTAP::Command> &response)
+        {
+            std::unique_ptr<FIDO2::CTAP::Response::ClientPIN> resp = std::unique_ptr<FIDO2::CTAP::Response::ClientPIN>(new FIDO2::CTAP::Response::ClientPIN());
+
+            //
+            response = std::unique_ptr<FIDO2::CTAP::Command>(resp.release());
+
+            return FIDO2::CTAP::CTAP2_OK;
+        }
 
         // changePIN	0x04
+        FIDO2::CTAP::Status cmdChangePin(std::unique_ptr<FIDO2::CTAP::Command> &response)
+        {
+            std::unique_ptr<FIDO2::CTAP::Response::ClientPIN> resp = std::unique_ptr<FIDO2::CTAP::Response::ClientPIN>(new FIDO2::CTAP::Response::ClientPIN());
+
+            //
+            response = std::unique_ptr<FIDO2::CTAP::Command>(resp.release());
+
+            return FIDO2::CTAP::CTAP2_OK;
+        }
 
         // getPinUvAuthTokenUsingPin	0x05
+        FIDO2::CTAP::Status cmdGetPinUvAuthTokenUsingPin(std::unique_ptr<FIDO2::CTAP::Command> &response)
+        {
+            std::unique_ptr<FIDO2::CTAP::Response::ClientPIN> resp = std::unique_ptr<FIDO2::CTAP::Response::ClientPIN>(new FIDO2::CTAP::Response::ClientPIN());
+
+            //
+            response = std::unique_ptr<FIDO2::CTAP::Command>(resp.release());
+
+            return FIDO2::CTAP::CTAP2_OK;
+        }
 
         // getPinUvAuthTokenUsingUv	0x06
+        FIDO2::CTAP::Status cmdGetPinUvAuthTokenUsingUv(std::unique_ptr<FIDO2::CTAP::Command> &response)
+        {
+            std::unique_ptr<FIDO2::CTAP::Response::ClientPIN> resp = std::unique_ptr<FIDO2::CTAP::Response::ClientPIN>(new FIDO2::CTAP::Response::ClientPIN());
+
+            //
+            response = std::unique_ptr<FIDO2::CTAP::Command>(resp.release());
+
+            return FIDO2::CTAP::CTAP2_OK;
+        }
 
         // getUVRetries	0x07
+        FIDO2::CTAP::Status cmdGetUVRetries(std::unique_ptr<FIDO2::CTAP::Command> &response)
+        {
+            std::unique_ptr<FIDO2::CTAP::Response::ClientPIN> resp = std::unique_ptr<FIDO2::CTAP::Response::ClientPIN>(new FIDO2::CTAP::Response::ClientPIN());
+
+            //
+            response = std::unique_ptr<FIDO2::CTAP::Command>(resp.release());
+
+            return FIDO2::CTAP::CTAP2_OK;
+        }
 
         FIDO2::CTAP::Status processRequest(const FIDO2::CTAP::Request::ClientPIN *request, std::unique_ptr<FIDO2::CTAP::Command> &response)
         {
@@ -41,19 +97,19 @@ namespace FIDO2
             switch (request->subCommand)
             {
             case FIDO2::CTAP::Request::ClientPIN::cmdGetPINRetries:
-                break;
+                return cmdGetPinRetries(response);
             case FIDO2::CTAP::Request::ClientPIN::cmdGetKeyAgreement:
                 return cmdGetKeyAgreement(response);
             case FIDO2::CTAP::Request::ClientPIN::cmdSetPIN:
-                break;
+                return cmdSetPin(request, response);
             case FIDO2::CTAP::Request::ClientPIN::cmdChangePIN:
-                break;
+                return cmdChangePin(response);
             case FIDO2::CTAP::Request::ClientPIN::cmdGetPinUvAuthTokenUsingPin:
-                break;
+                return cmdGetPinUvAuthTokenUsingPin(response);
             case FIDO2::CTAP::Request::ClientPIN::cmdGetPinUvAuthTokenUsingUv:
-                break;
+                return cmdGetPinUvAuthTokenUsingUv(response);
             case FIDO2::CTAP::Request::ClientPIN::cmdGetUVRetries:
-                break;
+                return cmdGetUVRetries(response);
             default:
                 break;
             }

@@ -314,6 +314,10 @@ namespace FIDO2
 
             public:
                 std::unique_ptr<Crypto::ECDSA::PublicKey> publicKey;
+                std::unique_ptr<uint8_t> pinUvAuthToken;
+                std::unique_ptr<uint8_t> pinRetries;
+                std::unique_ptr<bool> powerCycleState;
+                std::unique_ptr<uint8_t> uvRetries;
             };
 
             class Reset : public Command

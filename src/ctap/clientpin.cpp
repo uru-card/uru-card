@@ -109,6 +109,28 @@ namespace FIDO2
                     cborPair->append(0x01, cborKey);
                 }
 
+                if (response->pinUvAuthToken != nullptr)
+                {
+                    // CBOR cborPinUvAuthToken;
+                    // cborPinUvAuthToken.encode(response->pinUvAuthToken, );
+                    // cborPair->append(0x02, cborPinUvAuthToken);
+                }
+
+                if (response->pinRetries != nullptr)
+                {
+                    cborPair->append(0x03, *response->pinRetries);
+                }
+
+                if (response->powerCycleState != nullptr)
+                {
+                    cborPair->append(0x04, *response->powerCycleState);
+                }
+
+                if (response->uvRetries != nullptr)
+                {
+                    cborPair->append(0x04, *response->uvRetries);
+                }
+
                 // finalize the encoding
                 cbor = std::unique_ptr<CBOR>(new CBOR(*cborPair));
 
