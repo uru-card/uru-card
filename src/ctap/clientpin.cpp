@@ -4,6 +4,7 @@
 
 #include <YACL.h>
 
+#include "crypto/crypto.h"
 #include "fido2/ctap/ctap.h"
 #include "util.h"
 
@@ -20,7 +21,48 @@ namespace FIDO2
 
             Status parseClientPIN(const CBOR &cbor, std::unique_ptr<Command> &request)
             {
-                request = std::unique_ptr<Request::ClientPIN>(new Request::ClientPIN());
+                Serial.println("Parse ClientPIN");
+
+                if (!cbor.is_pair())
+                {
+                    return CTAP2_ERR_INVALID_CBOR;
+                }
+
+                std::unique_ptr<ClientPIN> rq(new ClientPIN());
+
+                CBORPair &cborPair = (CBORPair &)cbor;
+
+                // pinUvAuthProtocol (0x01)
+                CBOR cborPinUvAuthProtocol = cborPair.find_by_key((uint8_t)ClientPIN::keyPinUvAuthProtocol);
+                if (!cborPinUvAuthProtocol.is_uint8())
+                {
+                    return CTAP2_ERR_INVALID_CBOR;
+                }
+
+                rq->protocol = cborPinUvAuthProtocol;
+
+                // subCommand (0x02)
+                CBOR cborSubCommand = cborPair.find_by_key((uint8_t)ClientPIN::keySubCommand);
+                if (!cborSubCommand.is_uint8())
+                {
+                    return CTAP2_ERR_INVALID_CBOR;
+                }
+
+                rq->subCommand = (ClientPIN::SubCommand)(uint8_t)cborSubCommand;
+
+                // keyAgreement (0x03)
+                CBOR cborKeyAgreement = cborPair.find_by_key((uint8_t)ClientPIN::keyKeyAgreement);
+
+                // pinUvAuthParam (0x04)
+                CBOR cborPinUvAuthParam = cborPair.find_by_key((uint8_t)ClientPIN::keyPinUvAuthParam);
+
+                // newPinEnc (0x05)
+                CBOR cborNewPinEnc = cborPair.find_by_key((uint8_t)ClientPIN::keyNewPinEnc);
+
+                // pinHashEnc (0x06)
+                CBOR cborPinHashEnc = cborPair.find_by_key((uint8_t)ClientPIN::keyPinHashEnc);
+
+                request = std::unique_ptr<Command>(rq.release());
 
                 return CTAP2_OK;
             }
@@ -36,9 +78,41 @@ namespace FIDO2
 
             Status encode(const ClientPIN *response, std::unique_ptr<CBOR> &cbor)
             {
+                // use external buffer?
+                std::unique_ptr<CBORPair> cborPair(new CBORPair());
+
+                if (response->publicKey != nullptr)
+                {
+                    CBORPair cborKey;
+
+                    // kty: EC2 key type
+                    cborKey.append(1, 2);
+
+                    // alg: algorithm ECDH-ES+HKDF-256
+                    cborKey.append(3, -25);
+
+                    // crv: P-256 curve
+                    cborKey.append(-1, 1);
+
+                    // x-coordinate as byte string 32 bytes in length
+                    CBOR cborX;
+                    cborX.encode(response->publicKey->x, 32);
+                    cborKey.append(-2, cborX);
+
+                    // y-coordinate as byte string 32 bytes in length
+                    CBOR cborY;
+                    cborY.encode(response->publicKey->y, 32);
+                    cborKey.append(-3, cborY);
+
+                    cborPair->append(0x01, cborKey);
+                }
+
+                // finalize the encoding
+                cbor = std::unique_ptr<CBOR>(new CBOR(*cborPair));
 
                 return CTAP2_OK;
             }
+
         } // namespace Response
     }     // namespace CTAP
 } // namespace FIDO2

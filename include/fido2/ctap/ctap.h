@@ -201,7 +201,37 @@ namespace FIDO2
             class ClientPIN : public Command
             {
             public:
+                enum MapKeys
+                {
+                    keyPinUvAuthProtocol = 0x01,
+                    keySubCommand = 0x02,
+                    keyKeyAgreement = 0x03,
+                    keyPinUvAuthParam = 0x04,
+                    keyNewPinEnc = 0x05,
+                    keyPinHashEnc = 0x06,
+                };
+
+                enum SubCommand
+                {
+                    cmdGetPINRetries = 0x01,
+                    cmdGetKeyAgreement = 0x02,
+                    cmdSetPIN = 0x03,
+                    cmdChangePIN = 0x04,
+                    cmdGetPinUvAuthTokenUsingPin = 0x05,
+                    cmdGetPinUvAuthTokenUsingUv = 0x06,
+                    cmdGetUVRetries = 0x07
+                };
+
+            public:
                 virtual CommandCode getCommandCode() const;
+
+            public:
+                uint8_t protocol;
+                SubCommand subCommand;
+                uint8_t publicKey[64];
+                uint8_t pinUvAuthParam[16];
+                uint8_t newPinEnc[16];
+                uint8_t newHashEnc[16];
             };
 
             class Reset : public Command
@@ -281,6 +311,9 @@ namespace FIDO2
             {
             public:
                 virtual CommandCode getCommandCode() const;
+
+            public:
+                std::unique_ptr<Crypto::ECDSA::PublicKey> publicKey;
             };
 
             class Reset : public Command

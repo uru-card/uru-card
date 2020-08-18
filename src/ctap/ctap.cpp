@@ -51,7 +51,7 @@ namespace FIDO2
                 case authenticatorMakeCredential:
                     return encode((Response::MakeCredential *)response, cbor);
                 case authenticatorClientPIN:
-                    return encode((Request::ClientPIN *)response, cbor);
+                    return encode((Response::ClientPIN *)response, cbor);
                 case authenticatorReset:
                     return encode((Response::Reset *)response, cbor);
                 default:

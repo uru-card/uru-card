@@ -18,7 +18,7 @@ namespace FIDO2
                 return authenticatorGetInfo;
             }
 
-            Status parseGetInfo(const CBOR& cbor, std::unique_ptr<Command> &request)
+            Status parseGetInfo(const CBOR &cbor, std::unique_ptr<Command> &request)
             {
                 request = std::unique_ptr<GetInfo>(new GetInfo());
 
@@ -80,8 +80,21 @@ namespace FIDO2
                 }
                 cborPair->append(0x04, options);
 
-                // // max msg size
+                // max msg size
                 cborPair->append(0x05, response->maxMsgSize);
+
+                // List of supported PIN/UV protocol versions.
+                CBORArray cborVersions;
+                cborVersions.append((uint8_t)0x01);
+                cborPair->append(0x06, cborVersions);
+
+                // maxCredentialIdLength
+                cborPair->append(0x08, (uint8_t)16);
+
+                // List of supported transports
+                CBORArray cborTransports;
+                cborTransports.append("ble");
+                cborPair->append(0x09, cborTransports);
 
                 // finalize the encoding
                 cbor = std::unique_ptr<CBOR>(new CBOR(*cborPair));

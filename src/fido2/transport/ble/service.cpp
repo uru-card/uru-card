@@ -208,7 +208,7 @@ namespace FIDO2
 
             void ControlPoint::sendError(uint8_t errorCode)
             {
-                Serial.printf("Responding with error 0x%02d", errorCode);
+                Serial.printf("Responding with error 0x%02d\n", errorCode);
 
                 uint8_t *payload = commandBuffer.getPayload();
                 payload[0] = errorCode;
