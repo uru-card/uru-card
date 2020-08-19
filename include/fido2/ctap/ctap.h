@@ -228,10 +228,10 @@ namespace FIDO2
             public:
                 uint8_t protocol;
                 SubCommand subCommand;
-                uint8_t publicKey[64];
+                Crypto::ECDSA::PublicKey publicKey;
                 uint8_t pinUvAuthParam[16];
-                uint8_t newPinEnc[16];
-                uint8_t newHashEnc[16];
+                uint8_t newPinEnc[64];
+                uint8_t pinHashEnc[16];
             };
 
             class Reset : public Command
@@ -251,6 +251,7 @@ namespace FIDO2
             // parse data structures
             Status parseRpEntity(const CBOR &cbor, PublicKeyCredentialRpEntity *rp);
             Status parseUserEntity(const CBOR &cbor, PublicKeyCredentialUserEntity *user);
+            Status parsePublicKey(const CBOR &cbor, Crypto::ECDSA::PublicKey *publicKey);
 
         }; // namespace Request
 

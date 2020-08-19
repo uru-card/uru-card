@@ -52,15 +52,49 @@ namespace FIDO2
 
                 // keyAgreement (0x03)
                 CBOR cborKeyAgreement = cborPair.find_by_key((uint8_t)ClientPIN::keyKeyAgreement);
+                if (!cborKeyAgreement.is_null())
+                {
+                    if (parsePublicKey(cborKeyAgreement, &rq->publicKey) != CTAP2_OK)
+                    {
+                        return CTAP1_ERR_INVALID_PARAMETER;
+                    }
+                }
 
                 // pinUvAuthParam (0x04)
                 CBOR cborPinUvAuthParam = cborPair.find_by_key((uint8_t)ClientPIN::keyPinUvAuthParam);
+                if (!cborPinUvAuthParam.is_null())
+                {
+                    if (!cborPinUvAuthParam.is_bytestring() || cborPinUvAuthParam.get_bytestring_len() != 16)
+                    {
+                        return CTAP1_ERR_INVALID_PARAMETER;
+                    }
+
+                    cborPinUvAuthParam.get_bytestring(rq->pinUvAuthParam);
+                }
 
                 // newPinEnc (0x05)
                 CBOR cborNewPinEnc = cborPair.find_by_key((uint8_t)ClientPIN::keyNewPinEnc);
+                if (!cborNewPinEnc.is_null())
+                {
+                    if (!cborNewPinEnc.is_bytestring() || cborNewPinEnc.get_bytestring_len() != 64)
+                    {
+                        return CTAP1_ERR_INVALID_PARAMETER;
+                    }
+
+                    cborNewPinEnc.get_bytestring(rq->newPinEnc);
+                }
 
                 // pinHashEnc (0x06)
                 CBOR cborPinHashEnc = cborPair.find_by_key((uint8_t)ClientPIN::keyPinHashEnc);
+                if (!cborPinHashEnc.is_null())
+                {
+                    if (!cborPinHashEnc.is_bytestring() || cborPinHashEnc.get_bytestring_len() != 16)
+                    {
+                        return CTAP1_ERR_INVALID_PARAMETER;
+                    }
+
+                    cborPinHashEnc.get_bytestring(rq->pinHashEnc);
+                }
 
                 request = std::unique_ptr<Command>(rq.release());
 

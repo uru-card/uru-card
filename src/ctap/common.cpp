@@ -111,6 +111,38 @@ namespace FIDO2
 
                 return CTAP2_OK;
             }
+
+            Status parsePublicKey(const CBOR &cbor, Crypto::ECDSA::PublicKey *key)
+            {
+                if (!cbor.is_pair())
+                {
+                    return CTAP1_ERR_INVALID_PARAMETER;
+                }
+
+                CBORPair &cborPair = (CBORPair &)cbor;
+
+                //
+
+                //
+                CBOR cborX = cborPair.find_by_key(-2);
+                if (!cborX.is_bytestring() || cborX.get_bytestring_len() != 32)
+                {
+                    return CTAP1_ERR_INVALID_PARAMETER;
+                }
+
+                cborX.get_bytestring(key->x);
+
+                //
+                CBOR cborY = cborPair.find_by_key(-3);
+                if (!cborY.is_bytestring() || cborY.get_bytestring_len() != 32)
+                {
+                    return CTAP1_ERR_INVALID_PARAMETER;
+                }
+
+                cborY.get_bytestring(key->y);
+
+                return CTAP2_OK;
+            }
         } // namespace Request
 
         namespace Response
