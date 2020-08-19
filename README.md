@@ -9,19 +9,25 @@ URU Card is an Arduino based FIDO2 Authenticator. This repository contains sourc
 
 **Warning**: The project is in very early stage of the development
 
-## Getting started
+## How to run the project
 
-### Required hardware
+### ESP32 development board and USB cable
 
-All you need to start playing with the project is an ESP32 development board and an USB cable.
+You can use simple and affordable Wroom 32 development board. At the moment advanced features like secure element ATECC508a are not used so there is no need in more sophisticated boards.
+
+![ESP32 development board](/docs/images/uru-card-esp32.jpg)
+
+Connect the board to your computer using USB cable and make sure the UART port is available to your system. Make sure the selected port provides enough current as the ESP32 chips are quite hungry and sensitive to stability of the power source.
 
 ESP8266 or AVR based Arduino will not work.
 
-### Required software
+### Development Environment - PlatformIO
 
 To build the firmware you will need [PlatformIO](https://platformio.org/). Follow [the instructions](https://platformio.org/platformio-ide) to install it for your platform.
 
 ## Building
+
+First of all, get a copy of the source code using either `git` command or downloading a zip file.
 
 Open the project in the PlatformIO IDE. Connect the dev board to your computer then build and upload the firmware from the PlatformIO. All the required libraries will be downloaded automatically.
 
@@ -31,19 +37,25 @@ I'm using the following command in terminal window:
 $ pio run -t upload -t monitor
 ```
 
-The serial console with the debug information starts.
+The program will start immediately and the serial console will start output of the debug information.
 
 ## Testing
 
 ### Pairing (bonding) the device
 
+Despite the fact, the FIDO2 protocol supports BLE transport, at the moment is it available only under Windows. So, you will need either a Windows machine or a virtual environment. I am using Oracle Virtual Box and the trial version of Windows 10.
+
 Open bluetooth settings on your Windows computer or Android phone. Add new device and select "URU Card" from the list of discovered devices.
+
+After a few seconds, the device should be paired and appear in the list of available devices.
 
 This step should be performed only once.
 
 ### Testing tools
 
-Open the Chrome browser and visit website [webauthn.me](https://webauthn.me/). There you find a number of tools for testing the Authenticator device. The communication between the browser and the authenticator will be displayed in the serial console.
+Open the browser in your Windows. Chrome, Firefox and Edge browsers work equally well as they are using the system layer to communicate with the authenticator device.
+
+Visit the website [webauthn.me](https://webauthn.me/). There you find a number of tools for testing the Authenticator device. The communication between the browser and the authenticator will be displayed in the serial console.
 
 ## Contributing
 
@@ -57,4 +69,4 @@ See also the list of [contributors](https://github.com/uru-card/uru-card/contrib
 
 ## License
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE](/LICENSE) file for details
+This project is licensed under the Apache License 2.0 - see the [LICENSE](/LICENSE) file for details.
