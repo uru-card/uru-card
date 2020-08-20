@@ -9,6 +9,7 @@
 #include "crypto/crypto.h"
 #include "fido2/uuid.h"
 #include "util/be.h"
+#include "util/fixedbuffer.h"
 
 namespace FIDO2
 {
@@ -315,7 +316,7 @@ namespace FIDO2
 
             public:
                 std::unique_ptr<Crypto::ECDSA::PublicKey> publicKey;
-                std::unique_ptr<uint8_t> pinUvAuthToken;
+                std::unique_ptr<FixedBuffer16> pinUvAuthToken;
                 std::unique_ptr<uint8_t> pinRetries;
                 std::unique_ptr<bool> powerCycleState;
                 std::unique_ptr<uint8_t> uvRetries;

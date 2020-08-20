@@ -145,9 +145,9 @@ namespace FIDO2
 
                 if (response->pinUvAuthToken != nullptr)
                 {
-                    // CBOR cborPinUvAuthToken;
-                    // cborPinUvAuthToken.encode(response->pinUvAuthToken, );
-                    // cborPair->append(0x02, cborPinUvAuthToken);
+                    CBOR cborPinUvAuthToken;
+                    cborPinUvAuthToken.encode(response->pinUvAuthToken->value, response->pinUvAuthToken->size);
+                    cborPair->append(0x02, cborPinUvAuthToken);
                 }
 
                 if (response->pinRetries != nullptr)

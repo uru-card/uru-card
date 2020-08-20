@@ -139,15 +139,17 @@ namespace FIDO2
                     sendError(statusProcess);
                     return;
                 }
-                assert(response != nullptr);
 
-                // encode the response
                 std::unique_ptr<CBOR> cborResponse;
-                FIDO2::CTAP::Status statusEncode = FIDO2::CTAP::Response::encode(response.get(), cborResponse);
-                if (statusEncode != FIDO2::CTAP::CTAP2_OK)
+                if (response != nullptr)
                 {
-                    sendError(statusEncode);
-                    return;
+                    // encode the response
+                    FIDO2::CTAP::Status statusEncode = FIDO2::CTAP::Response::encode(response.get(), cborResponse);
+                    if (statusEncode != FIDO2::CTAP::CTAP2_OK)
+                    {
+                        sendError(statusEncode);
+                        return;
+                    }
                 }
 
                 // send successful result

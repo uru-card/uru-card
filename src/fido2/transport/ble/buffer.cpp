@@ -13,6 +13,11 @@ namespace FIDO2
         {
             CommandBuffer commandBuffer;
 
+            void CommandBuffer::reset()
+            {
+                position = 0;
+            }
+
             uint16_t CommandBuffer::init(const uint8_t *data, const uint16_t length)
             {
                 if (length > FIDO2_MAX_MSG_SIZE)

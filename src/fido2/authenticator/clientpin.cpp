@@ -14,7 +14,10 @@ namespace FIDO2
             std::unique_ptr<FIDO2::CTAP::Response::ClientPIN> resp = std::unique_ptr<FIDO2::CTAP::Response::ClientPIN>(new FIDO2::CTAP::Response::ClientPIN());
 
             //
-            resp->pinRetries = std::unique_ptr<uint8_t>(new uint8_t(5));
+            resp->pinRetries = std::unique_ptr<uint8_t>(new uint8_t(8));
+
+            //
+            resp->powerCycleState = std::unique_ptr<bool>(new bool(false));
 
             //
             response = std::unique_ptr<FIDO2::CTAP::Command>(resp.release());
@@ -46,6 +49,8 @@ namespace FIDO2
 
             std::unique_ptr<FIDO2::CTAP::Response::ClientPIN> resp = std::unique_ptr<FIDO2::CTAP::Response::ClientPIN>(new FIDO2::CTAP::Response::ClientPIN());
 
+            resp->pinUvAuthToken = std::unique_ptr<FixedBuffer16>(new FixedBuffer16());
+
             //
             response = std::unique_ptr<FIDO2::CTAP::Command>(resp.release());
 
@@ -58,6 +63,8 @@ namespace FIDO2
             Serial.println("Change PIN");
 
             std::unique_ptr<FIDO2::CTAP::Response::ClientPIN> resp = std::unique_ptr<FIDO2::CTAP::Response::ClientPIN>(new FIDO2::CTAP::Response::ClientPIN());
+
+            resp->pinUvAuthToken = std::unique_ptr<FixedBuffer16>(new FixedBuffer16());
 
             //
             response = std::unique_ptr<FIDO2::CTAP::Command>(resp.release());
@@ -72,6 +79,8 @@ namespace FIDO2
 
             std::unique_ptr<FIDO2::CTAP::Response::ClientPIN> resp = std::unique_ptr<FIDO2::CTAP::Response::ClientPIN>(new FIDO2::CTAP::Response::ClientPIN());
 
+            resp->pinUvAuthToken = std::unique_ptr<FixedBuffer16>(new FixedBuffer16());
+
             //
             response = std::unique_ptr<FIDO2::CTAP::Command>(resp.release());
 
@@ -84,6 +93,8 @@ namespace FIDO2
             Serial.println("Get PIN UV Auth token using UV");
 
             std::unique_ptr<FIDO2::CTAP::Response::ClientPIN> resp = std::unique_ptr<FIDO2::CTAP::Response::ClientPIN>(new FIDO2::CTAP::Response::ClientPIN());
+
+            resp->pinUvAuthToken = std::unique_ptr<FixedBuffer16>(new FixedBuffer16());
 
             //
             response = std::unique_ptr<FIDO2::CTAP::Command>(resp.release());

@@ -24,6 +24,8 @@ namespace FIDO2
             resp->options.uvSupported = true;
             resp->options.uv = true;
 
+            resp->extensions.push_back("hmac-secret");
+
             resp->maxMsgSize = 2048;
 
             response = std::unique_ptr<FIDO2::CTAP::Command>(resp.release());

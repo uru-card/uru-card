@@ -13,6 +13,8 @@ namespace FIDO2
             class CommandBuffer
             {
             public:
+                void reset();
+
                 uint16_t init(const uint8_t *data, const uint16_t len);
                 uint16_t append(const uint8_t *data, const uint16_t len);
 

@@ -84,9 +84,15 @@ namespace FIDO2
                 cborPair->append(0x05, response->maxMsgSize);
 
                 // List of supported PIN/UV protocol versions.
-                CBORArray cborVersions;
-                cborVersions.append((uint8_t)0x01);
-                cborPair->append(0x06, cborVersions);
+                if (response->options.clientPinSupported)
+                {
+                    CBORArray cborVersions;
+                    cborVersions.append((uint8_t)0x01);
+                    cborPair->append(0x06, cborVersions);
+                }
+
+                //
+                cborPair->append(0x07, (uint8_t)8);
 
                 // maxCredentialIdLength
                 cborPair->append(0x08, (uint8_t)16);
@@ -95,6 +101,17 @@ namespace FIDO2
                 CBORArray cborTransports;
                 cborTransports.append("ble");
                 cborPair->append(0x09, cborTransports);
+
+                //
+                CBORArray cborAlgorithms;
+
+                CBORPair cborAlgorithm;
+                cborAlgorithm.append("alg", -7);
+                cborAlgorithm.append("type", "public-key");
+
+                cborAlgorithms.append(cborAlgorithm);
+
+                cborPair->append(0x0A, cborAlgorithms);
 
                 // finalize the encoding
                 cbor = std::unique_ptr<CBOR>(new CBOR(*cborPair));

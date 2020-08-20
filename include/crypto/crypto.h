@@ -9,6 +9,11 @@ namespace Crypto
 
     namespace ECDSA
     {
+        struct PrivateKey
+        {
+
+        };
+
         struct PublicKey
         {
             uint8_t x[32];
