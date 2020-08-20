@@ -13,6 +13,7 @@ namespace FIDO2
             std::unique_ptr<FIDO2::CTAP::Response::GetInfo> resp = std::unique_ptr<FIDO2::CTAP::Response::GetInfo>(new FIDO2::CTAP::Response::GetInfo());
 
             resp->versions.push_back("FIDO_2_0");
+            resp->versions.push_back("FIDO_2_1_PRE");
 
             resp->aaguid = FIDO2::Authenticator::aaguid;
 
@@ -20,7 +21,7 @@ namespace FIDO2
             resp->options.rk = true;
             resp->options.clientPinSupported = true;
             resp->options.clientPin = true;
-            resp->options.up = false;
+            resp->options.up = true;
             resp->options.uvSupported = true;
             resp->options.uv = true;
 

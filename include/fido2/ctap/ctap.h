@@ -197,6 +197,8 @@ namespace FIDO2
                 PublicKeyCredentialRpEntity rp;
                 PublicKeyCredentialUserEntity user;
                 std::vector<int8_t> algorithms;
+                std::unique_ptr<FixedBuffer16> pinUvAuthParam;
+                uint8_t pinUvAuthProtocol;
             };
 
             class ClientPIN : public Command

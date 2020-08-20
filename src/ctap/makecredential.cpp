@@ -229,6 +229,18 @@ namespace FIDO2
                 // pinUvAuthParam (0x08)
                 // First 16 bytes of HMAC-SHA-256 of clientDataHash using pinUvAuthToken which platform got from the authenticator
                 CBOR cborPinUvAuthParam = cborPair.find_by_key((uint8_t)MakeCredential::keyPinUvAuthParam);
+                if (!cborPinUvAuthParam.is_null())
+                {
+                    if (!cborPinUvAuthParam.is_bytestring() || cborPinUvAuthParam.get_bytestring_len() > 16)
+                    {
+                        return CTAP2_ERR_INVALID_CBOR;
+                    }
+
+                    rq->pinUvAuthParam = std::unique_ptr<FixedBuffer16>(new FixedBuffer16());
+
+                    cborPinUvAuthParam.get_bytestring(rq->pinUvAuthParam->value);
+                    rq->pinUvAuthParam->length = cborPinUvAuthParam.get_bytestring_len();
+                }
 
                 // pinUvAuthProtocol (0x09)
                 // PIN/UV protocol version chosen by the client
@@ -258,7 +270,7 @@ namespace FIDO2
 
                 // authData (0x02)
                 CBOR cborAuthData;
-                cborAuthData.encode((uint8_t*)&response->authenticatorData, sizeof(AuthenticatorData));
+                cborAuthData.encode((uint8_t *)&response->authenticatorData, sizeof(AuthenticatorData));
                 cborPair->append(0x02, cborAuthData);
 
                 // attStmt (0x03)

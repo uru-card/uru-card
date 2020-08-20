@@ -4,6 +4,7 @@ template <size_t S>
 struct FixedBuffer
 {
     uint8_t value[S];
+    size_t length;
     const size_t size = S;
 
     void set(uint8_t *data, size_t len)

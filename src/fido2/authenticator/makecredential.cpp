@@ -17,6 +17,11 @@ namespace FIDO2
         {
             std::unique_ptr<FIDO2::CTAP::Response::MakeCredential> resp = std::unique_ptr<FIDO2::CTAP::Response::MakeCredential>(new FIDO2::CTAP::Response::MakeCredential());
 
+            if (request->pinUvAuthParam != nullptr && request->pinUvAuthParam->length == 0)
+            {
+                return FIDO2::CTAP::CTAP2_ERR_PIN_INVALID;
+            }
+
             //
             Crypto::ECDSA::PublicKey publicKey;
             Crypto::ECDSA::getPublicKey(&publicKey);
