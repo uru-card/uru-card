@@ -6,6 +6,7 @@
 #include "ble/security.h"
 #include "ble/device.h"
 #include "fido2/transport/ble/service.h"
+#include "display/display.h"
 
 #define GATT_DEVICE_NAME DEVICE_NAME
 #define GATT_MODEL_NUMBER "URU Card v1"
@@ -64,8 +65,14 @@ namespace BLE
         BLEDevice::startAdvertising();
     }
 
-    void Server::onConnect(BLEServer *pServer) {}
+    void Server::onConnect(BLEServer *pServer) {
+        Display::enableIcon(ICON_BLUETOOTH);
+        Display::update();
+    }
 
-    void Server::onDisconnect(BLEServer *pServer) {}
+    void Server::onDisconnect(BLEServer *pServer) {
+        Display::disableIcon(ICON_BLUETOOTH);
+        Display::update();
+    }
 
 } // namespace BLE

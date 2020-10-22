@@ -25,9 +25,13 @@ void setup()
     FIDO2::Transport::BLE::Service::init();
 
     BLE::start();
+
+    delay(1000);
+
+    Display::update();
 }
 
 void loop()
 {
-    delay(1000);
+    delay(100);
 }
