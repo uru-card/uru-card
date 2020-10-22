@@ -2,11 +2,12 @@
 #include <BLEDevice.h>
 #include <BLESecurity.h>
 
+#include "config.h"
 #include "ble/security.h"
 #include "ble/device.h"
 #include "fido2/transport/ble/service.h"
 
-#define GATT_DEVICE_NAME "URU Card"
+#define GATT_DEVICE_NAME DEVICE_NAME
 #define GATT_MODEL_NUMBER "URU Card v1"
 #define GATT_FIRMWARE_REVISION "1.0.0"
 
