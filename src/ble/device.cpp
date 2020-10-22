@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 #include <BLE2902.h>
 #include <BLEDevice.h>
 #include <BLESecurity.h>
@@ -67,12 +69,10 @@ namespace BLE
 
     void Server::onConnect(BLEServer *pServer) {
         Display::enableIcon(ICON_BLUETOOTH);
-        Display::update();
     }
 
     void Server::onDisconnect(BLEServer *pServer) {
         Display::disableIcon(ICON_BLUETOOTH);
-        Display::update();
     }
 
 } // namespace BLE

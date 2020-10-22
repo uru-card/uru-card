@@ -16,6 +16,8 @@ namespace Display
 {
     Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire);
 
+    bool needsUpdate = false;
+
     static const unsigned char PROGMEM icon_bluetooth[] = {
         B00100000,
         B00110000,
@@ -29,6 +31,10 @@ namespace Display
         B00110000,
         B00100000,
         B00000000,
+        B00000000,
+        B00000000,
+        B00000000,
+        B00000000,
     };
 
     bool icons[1] = {};
@@ -41,14 +47,19 @@ namespace Display
 
     void update()
     {
+        if (!needsUpdate)
+            return;
+
         display.clearDisplay();
 
         if (icons[ICON_BLUETOOTH])
         {
-            display.drawBitmap(0, 0, icon_bluetooth, 8, 12, 1);
+            display.drawBitmap(0, 0, icon_bluetooth, 8, 16, 1);
         }
 
         display.display();
+
+        needsUpdate = false;
     }
 
     void showLogo()
@@ -64,11 +75,15 @@ namespace Display
     void enableIcon(int icon)
     {
         icons[icon] = 1;
+
+        needsUpdate = true;
     }
 
     void disableIcon(int icon)
     {
         icons[icon] = 0;
+
+        needsUpdate = true;
     }
 
 } // namespace Display

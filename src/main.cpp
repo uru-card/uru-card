@@ -27,11 +27,11 @@ void setup()
     BLE::start();
 
     delay(1000);
-
-    Display::update();
 }
 
 void loop()
 {
+    Display::update();
+
     delay(100);
 }
