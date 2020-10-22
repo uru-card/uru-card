@@ -2,6 +2,8 @@
 
 #include <Arduino.h>
 
+#include "config.h"
+
 #include "fido2/authenticator/authenticator.h"
 
 namespace FIDO2
@@ -21,7 +23,7 @@ namespace FIDO2
             resp->options.rk = true;
             resp->options.clientPinSupported = true;
             resp->options.clientPin = true;
-            resp->options.up = true;
+            resp->options.up = false;
             resp->options.uvSupported = true;
             resp->options.uv = true;
 
