@@ -21,6 +21,12 @@ Connect the board to your computer using USB cable and make sure the UART port i
 
 ESP8266 or AVR based Arduino will not work.
 
+### URU Card board
+
+The firmware is intended for use with the URU Card device which provides more hardware features than the development board including OLED display, touch keyboard and hardware secure element. The design files for the URU Card device are avialable in the separate repository [here](https://github.com/uru-card/uru-card-pcb).
+
+![URU Card](/docs/images/uru-card.jpg)
+
 ### Development Environment - PlatformIO
 
 To build the firmware you will need [PlatformIO](https://platformio.org/). Follow [the instructions](https://platformio.org/platformio-ide) to install it for your platform.
