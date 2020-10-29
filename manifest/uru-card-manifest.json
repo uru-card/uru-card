@@ -1,0 +1,41 @@
+{
+    "description": "URU Card",
+    "aaguid": "63d9df31-662d-476a-a7a7-53b6aa038975",
+    "protocolFamily": "fido2",
+    "authenticatorVersion": 2,
+    "upv": [
+        {
+            "major": 1,
+            "minor": 0
+        }
+    ],
+    "assertionScheme": "FIDOV2",
+    "authenticationAlgorithm": 1,
+    "publicKeyAlgAndEncoding": 260,
+    "attestationTypes": [
+        15879
+    ],
+    "userVerificationDetails": [
+        [
+            {
+                "userVerification": 2
+            }
+        ],
+        [
+            {
+                "userVerification": 4
+            }
+        ]
+    ],
+    "keyProtection": 10,
+    "matcherProtection": 4,
+    "cryptoStrength": 128,
+    "operatingEnv": "Secure Element (SE)",
+    "attachmentHint": 28,
+    "isSecondFactorOnly": false,
+    "tcDisplay": 0,
+    "attestationRootCertificates": [
+        "MIICJDCCAckCFGVo3EHxTpiLj+TVQKkAFNFpABezMAoGCCqGSM49BAMCMIGSMQswCQYDVQQGEwJERTEMMAoGA1UECAwDTlJXMQ8wDQYDVQQHDAZLYWFyc3QxETAPBgNVBAoMCFVSVSBBdXRoMREwDwYDVQQLDAhVUlUgQ2FyZDEUMBIGA1UEAwwLdXJ1YXV0aC5jb20xKDAmBgkqhkiG9w0BCQEWGWFuZHJldy5vdmNoYXJvdkBnbWFpbC5jb20wIBcNMjAwODExMTI0MDU1WhgPMjA3MDA3MzAxMjQwNTVaMIGSMQswCQYDVQQGEwJERTEMMAoGA1UECAwDTlJXMQ8wDQYDVQQHDAZLYWFyc3QxETAPBgNVBAoMCFVSVSBBdXRoMREwDwYDVQQLDAhVUlUgQ2FyZDEUMBIGA1UEAwwLdXJ1YXV0aC5jb20xKDAmBgkqhkiG9w0BCQEWGWFuZHJldy5vdmNoYXJvdkBnbWFpbC5jb20wWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAARe9hsPcYxyTLG4425vQn6WwFrpilVkwrB3Nfddtn2dz257LRpJWBgRE9SscsthLarITvN1ObInO5e1LQyKaQ3zMAoGCCqGSM49BAMCA0kAMEYCIQD/Ci31hRYZUtrWSccL/spdsT7F91XADCWkSFew/7raPAIhAMpZJNw9xh7vxJWQCYwl7Rc2SSEFcLBlJsChZGul6Psm"
+    ],
+    "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAC4jAAAuIwF4pT92AAAFG0lEQVRYw72XWVCTVxSAaRl0hvGhfem0vqX1oX2qTh/64HT62AfRl47T2k4nKptQIQsJSUggJEHCajDQsFmMgEAblimLssRAQLBAkxR16lAQilNlKWtYs93T+//4/yQh6Q9iPTN38k/+/5zz3XPPPffckJADCEeqDMvUFB0O+b/EarWGBnuXqs57Nz5Zdi82KeW+WJX1XsjrlESJnB3DlyxdSBQCMaK4ouVESXrMoGUk9MDGLRZLQCOlN2vCeDLluWi+xEY5VuZoXGpNIfl8PiEJLiYKbZwUxbfashuHDgSRXVjCkmdrWGKl+gRfprwYJ5Tp8YznKcdxQimYzH3gdDrxcEFPXz+6lCQB6n00T7yIv6nmShWRsszcT3kyFYuw+WRy6g1G50uLi29ShvwHDj20G02wurYGhKys2D3wQtbW1sHYbYYEidwVSPd8ggDMA4OsPUWAUsIJBhpdGbS2d7pHx8YRnjEiHdvtqK7+F49UkQP+4sYy9mQCbncaUUFxuQdHzk3Z6+juZQb4+9k0HYHV1TUnZdiDEEz8NQWVNfVw7LOzEH48AkRpamASh9Ppoew1dxiZASy/PzhCKaxvbMw9Hh2DolK964uzMe7wE6eBHNh5+PFTewWgl6GxrZ0ZYNj24B1KweFwegxNrUA7pkcE+StKy9oXQG1TCzNAJ14nSmFry7FlaGwJAHD6pQD0dfXMAG1d3TQAofzzPgAQQq71jU2f/5xeALiWMAPUNjbvGwA7hubbXVDX2Apx/LStYADacj0zQJWhyRegoTkogNgLoAUDFJbonf5b0xsgv/g6M0DpzVtBAfrvD8Ps3DxSZl/zeAMQ0mXqhcRkBUiVuUEBcopKmQF+qKgkAdiXk0hlCuDY51/RRi22kW0AuW8OzMzOgUyZFxRAXaBjBsjXlbOIsukPQAzbyEOyEsozNRAIYHpm1pOake8H4KIBlHlaZoASfTWLfZkfcAmM3X1kZfySzUHbANk+zkYe/oG+F8jx9t3JQ5drB4CXmsEMoK81eOcA8o3AI9JoupqKwA4AfodSVXnwU0MLcMQqhI8EMlpOL4BkRRYzQGuH8VAkJ5lUWFpedre1GxEFoC2uAENTC3wdyUP+S6C+qnM8ez5DPhfofvTMzMxRpyR9Oja03Hl7T6chbjqeEgrjE5PO0T/HnUG3oReAydwPZRW30K9DVmDHiTy4ipL/T049RS9O1rk9NyS41zMQSne67hLHK0Sciw8IwJOoHF5VEAaHrbggdXoWFpZosE5TD3kcxwtlzXsG4MqU3xBKQvkVMonw7NAugI9P+dSBQOJyuUGsUFPNDHvPAPxU1WEcsgVCcfA3K5FQIJBlgs9x7FeIAsmwxUa3aCU3qo/sqy/EDaiIUE4Qp6HlFTuy21chlisLWIoDCdE1cVPSSQDcpkn23ZgmK9RhlwQpjwgDuVqdm9jbm5tbrqraBvTWJ2f+E4D49ipu5QhdbONxXlHpy11ektIyPoziiVfIOn5NB/PzC6SD59OzoLteCZL03T3h4uIS5Gh1ZBuGde24Tf/oQC26MD3zZBRPtLg9GykYe3rxFtveYzgidM/ocDjAfG/ATbTsxLeRXNE8zqWTr+QmJL2S+340X2z2bs+7TD3oHxwRIiodd7vdOGfoiodBBzD4Bwd2PDQ0FOq3Oy5gkKlg9wac7ZMcqSLqVV5Od91kyqvqyCtarCDFjMNMhBrwc69AnvFdWWVN2Gu9pOKlOYp3y9GD2PgXPXiYJqeXEtQAAAAASUVORK5CYII="
+}
