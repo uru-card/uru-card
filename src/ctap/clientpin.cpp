@@ -6,7 +6,7 @@
 
 #include "crypto/crypto.h"
 #include "fido2/ctap/ctap.h"
-#include "util.h"
+#include "util/util.h"
 
 namespace FIDO2
 {
@@ -25,7 +25,7 @@ namespace FIDO2
 
                 if (!cbor.is_pair())
                 {
-                    return CTAP2_ERR_INVALID_CBOR;
+                    RAISE(Exception(CTAP2_ERR_INVALID_CBOR));
                 }
 
                 std::unique_ptr<ClientPIN> rq(new ClientPIN());
@@ -36,7 +36,7 @@ namespace FIDO2
                 CBOR cborPinUvAuthProtocol = cborPair.find_by_key((uint8_t)ClientPIN::keyPinUvAuthProtocol);
                 if (!cborPinUvAuthProtocol.is_uint8())
                 {
-                    return CTAP2_ERR_INVALID_CBOR;
+                    RAISE(Exception(CTAP2_ERR_INVALID_CBOR));
                 }
 
                 rq->protocol = cborPinUvAuthProtocol;
@@ -45,7 +45,7 @@ namespace FIDO2
                 CBOR cborSubCommand = cborPair.find_by_key((uint8_t)ClientPIN::keySubCommand);
                 if (!cborSubCommand.is_uint8())
                 {
-                    return CTAP2_ERR_INVALID_CBOR;
+                    RAISE(Exception(CTAP2_ERR_INVALID_CBOR));
                 }
 
                 rq->subCommand = (ClientPIN::SubCommand)(uint8_t)cborSubCommand;
@@ -56,7 +56,7 @@ namespace FIDO2
                 {
                     if (parsePublicKey(cborKeyAgreement, &rq->publicKey) != CTAP2_OK)
                     {
-                        return CTAP1_ERR_INVALID_PARAMETER;
+                        RAISE(Exception(CTAP1_ERR_INVALID_PARAMETER));
                     }
                 }
 
@@ -66,7 +66,7 @@ namespace FIDO2
                 {
                     if (!cborPinUvAuthParam.is_bytestring() || cborPinUvAuthParam.get_bytestring_len() != 16)
                     {
-                        return CTAP1_ERR_INVALID_PARAMETER;
+                        RAISE(Exception(CTAP1_ERR_INVALID_PARAMETER));
                     }
 
                     cborPinUvAuthParam.get_bytestring(rq->pinUvAuthParam);
@@ -78,7 +78,7 @@ namespace FIDO2
                 {
                     if (!cborNewPinEnc.is_bytestring() || cborNewPinEnc.get_bytestring_len() != 64)
                     {
-                        return CTAP1_ERR_INVALID_PARAMETER;
+                        RAISE(Exception(CTAP1_ERR_INVALID_PARAMETER));
                     }
 
                     cborNewPinEnc.get_bytestring(rq->newPinEnc);
@@ -90,7 +90,7 @@ namespace FIDO2
                 {
                     if (!cborPinHashEnc.is_bytestring() || cborPinHashEnc.get_bytestring_len() != 16)
                     {
-                        return CTAP1_ERR_INVALID_PARAMETER;
+                        RAISE(Exception(CTAP1_ERR_INVALID_PARAMETER));
                     }
 
                     cborPinHashEnc.get_bytestring(rq->pinHashEnc);
@@ -115,6 +115,8 @@ namespace FIDO2
                 // use external buffer?
                 std::unique_ptr<CBORPair> cborPair(new CBORPair());
 
+                bool do_it = false;
+
                 if (response->publicKey != nullptr)
                 {
                     CBORPair cborKey;
@@ -122,7 +124,7 @@ namespace FIDO2
                     // kty: EC2 key type
                     cborKey.append(1, 2);
 
-                    // alg: algorithm ECDH-ES+HKDF-256
+                    // alg: algorithm ECDH-ES + HKDF-256
                     // Note: The COSEAlgorithmIdentifier used is -25 (ECDH-ES + HKDF-256) although this is NOT the algorithm actually used.
                     // Setting this to a different value may result in compatibility issues.
                     cborKey.append(3, -25);
@@ -141,32 +143,45 @@ namespace FIDO2
                     cborKey.append(-3, cborY);
 
                     cborPair->append(0x01, cborKey);
+
+                    do_it = true;
                 }
 
                 if (response->pinUvAuthToken != nullptr)
                 {
                     CBOR cborPinUvAuthToken;
-                    cborPinUvAuthToken.encode(response->pinUvAuthToken->value, response->pinUvAuthToken->size);
+                    cborPinUvAuthToken.encode(response->pinUvAuthToken->value, response->pinUvAuthToken->maxLength);
                     cborPair->append(0x02, cborPinUvAuthToken);
+
+                    do_it = true;
                 }
 
                 if (response->pinRetries != nullptr)
                 {
                     cborPair->append(0x03, *response->pinRetries);
+
+                    do_it = true;
                 }
 
                 if (response->powerCycleState != nullptr)
                 {
                     cborPair->append(0x04, *response->powerCycleState);
+
+                    do_it = true;
                 }
 
                 if (response->uvRetries != nullptr)
                 {
                     cborPair->append(0x04, *response->uvRetries);
+
+                    do_it = true;
                 }
 
                 // finalize the encoding
-                cbor = std::unique_ptr<CBOR>(new CBOR(*cborPair));
+                if (do_it)
+                {
+                    cbor = std::unique_ptr<CBOR>(new CBOR(*cborPair));
+                }
 
                 return CTAP2_OK;
             }

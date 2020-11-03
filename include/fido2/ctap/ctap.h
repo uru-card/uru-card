@@ -1,5 +1,6 @@
 #pragma once
 
+#include <exception>
 #include <memory>
 #include <vector>
 
@@ -83,6 +84,28 @@ namespace FIDO2
             CTAP2_ERR_VENDOR_LAST = 0xFF,           // Vendor specific error.
         };
 
+        class Exception : public std::exception
+        {
+        public:
+            Exception()
+            {
+                this->status = CTAP1_ERR_OTHER;
+            }
+
+            Exception(const Status status)
+            {
+                this->status = status;
+            }
+
+            const Status getStatus() const
+            {
+                return this->status;
+            }
+
+        private:
+            Status status;
+        };
+
 #pragma pack(push, 1)
         union AuthenticatorDataFlags
         {
@@ -124,7 +147,7 @@ namespace FIDO2
 
         struct PublicKeyCredentialUserEntity
         {
-            uint8_t id[64];
+            FixedBuffer64 id;
             String name;
             String displayName;
             String icon;
@@ -133,7 +156,8 @@ namespace FIDO2
         struct PublicKeyCredentialDescriptor
         {
             String type;
-            uint8_t credentialId[CREDENTIAL_ID_LENGTH];
+            FixedBuffer<CREDENTIAL_ID_LENGTH> credentialId;
+            std::vector<String> transports;
         };
 
         class Command
@@ -189,7 +213,21 @@ namespace FIDO2
                     keyPinUvAuthProtocol = 0x09,
                 };
 
+                struct Options
+                {
+                    bool rk : 1;
+                    bool uv : 1;
+                    bool up : 1;
+                };
+
             public:
+                MakeCredential()
+                {
+                    options.rk = false;
+                    options.uv = false;
+                    options.up = false;
+                }
+
                 virtual CommandCode getCommandCode() const;
 
             public:
@@ -199,6 +237,8 @@ namespace FIDO2
                 std::vector<int8_t> algorithms;
                 std::unique_ptr<FixedBuffer16> pinUvAuthParam;
                 uint8_t pinUvAuthProtocol;
+                std::vector<PublicKeyCredentialDescriptor> excludeList;
+                Options options;
             };
 
             class ClientPIN : public Command
@@ -263,13 +303,7 @@ namespace FIDO2
             class GetInfo : public Command
             {
             public:
-                virtual CommandCode getCommandCode() const;
-
-            public:
-                std::vector<String> versions;
-                std::vector<String> extensions;
-                FIDO2::UUID aaguid;
-                struct
+                struct Options
                 {
                     bool plat : 1;
                     bool rk : 1;
@@ -280,9 +314,24 @@ namespace FIDO2
                     bool uv : 1;
                     bool uvToken : 1;
                     bool config : 1;
-                } options;
+                };
 
-                uint16_t maxMsgSize;
+            public:
+                virtual CommandCode getCommandCode() const;
+
+            public:
+                std::vector<String> versions;
+                std::vector<String> extensions;
+                FIDO2::UUID aaguid;
+                Options options;
+                std::unique_ptr<uint16_t> maxMsgSize;
+                std::unique_ptr<std::vector<uint8_t>> pinUvAuthProtocols;
+                std::unique_ptr<uint8_t> maxCredentialCountInList;
+                std::unique_ptr<uint8_t> maxCredentialIdLength;
+                std::unique_ptr<std::vector<String>> transports;
+                // std::unique_ptr<std::vector<> algorithms;
+                std::unique_ptr<uint8_t> maxAuthenticatorConfigLength;
+                std::unique_ptr<uint8_t> defaultCredProtect;
             };
 
             class GetAssertion : public Command

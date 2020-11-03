@@ -5,7 +5,7 @@
 
 #include "crypto/crypto.h"
 
-#include "util.h"
+#include "util/util.h"
 
 namespace FIDO2
 {

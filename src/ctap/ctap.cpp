@@ -3,6 +3,7 @@
 #include <Arduino.h>
 
 #include "fido2/ctap/ctap.h"
+#include "util/util.h"
 
 namespace FIDO2
 {
@@ -34,7 +35,7 @@ namespace FIDO2
                     break;
                 }
 
-                return CTAP1_ERR_INVALID_COMMAND;
+                RAISE(Exception(CTAP1_ERR_INVALID_COMMAND));
             }
         } // namespace Request
 
@@ -58,7 +59,7 @@ namespace FIDO2
                     break;
                 }
 
-                return CTAP1_ERR_INVALID_COMMAND;
+                RAISE(Exception(CTAP1_ERR_INVALID_COMMAND));
             }
         } // namespace Response
     }     // namespace CTAP

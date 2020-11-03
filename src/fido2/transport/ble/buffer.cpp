@@ -2,7 +2,7 @@
 
 #include "fido2/transport/ble/buffer.h"
 
-#include "util.h"
+#include "util/util.h"
 #include "util/be.h"
 
 namespace FIDO2

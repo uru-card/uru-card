@@ -11,7 +11,7 @@
 #include "fido2/ctap/ctap.h"
 #include "fido2/transport/ble/buffer.h"
 #include "fido2/transport/ble/service.h"
-#include "util.h"
+#include "util/util.h"
 
 namespace FIDO2
 {
@@ -75,6 +75,7 @@ namespace FIDO2
                 uint8_t cmd = value[0];
                 if (cmd >= 0x80)
                 {
+                    // Serial.println("Initialization Fragment");
                     // The start of an initialization fragment is indicated by setting the high bit in the first byte.
                     // The subsequent two bytes indicate the total length of the frame, in big-endian order.
                     // The first maxLen - 3 bytes of data follow.
@@ -85,6 +86,7 @@ namespace FIDO2
                 }
                 else
                 {
+                    // Serial.println("Continuation Fragment");
                     // Continuation fragments begin with a sequence number, beginning at 0, implicitly with the high bit cleared.
                     // The sequence number must wraparound to 0 after reaching the maximum sequence number of 0x7f.
                     if (commandBuffer.append((const uint8_t *)value.c_str(), value.length()) == 0)
@@ -96,9 +98,8 @@ namespace FIDO2
                 //
                 if (commandBuffer.isComplete())
                 {
-                    Serial.printf("Received command 0x%02x with payload\n", commandBuffer.getCmd());
-                    serialDumpBuffer(commandBuffer.getPayload(), commandBuffer.getPayloadLength());
-
+                    // Serial.printf("\n# Received command 0x%02x with payload\n", commandBuffer.getCmd());
+                    // serialDumpBuffer(commandBuffer.getPayload(), commandBuffer.getPayloadLength());
                     processRequest();
                 }
             }
@@ -108,6 +109,7 @@ namespace FIDO2
                 switch (commandBuffer.getCmd())
                 {
                 case CMD_PING:
+                    Serial.println("PING");
                     statusCharacteristic->setValue(commandBuffer.getBuffer(), commandBuffer.getBufferLength());
                     statusCharacteristic->notify();
                     break;
@@ -115,55 +117,67 @@ namespace FIDO2
                     processMessage();
                     break;
                 case CMD_CANCEL:
+                    Serial.println("CANCEL");
                     break;
                 }
             }
 
             void ControlPoint::processMessage()
             {
-                // parse the request
-                std::unique_ptr<FIDO2::CTAP::Command> request;
-                FIDO2::CTAP::Status statusParse = FIDO2::CTAP::Request::parse(commandBuffer.getPayload(), commandBuffer.getPayloadLength(), request);
-                if (statusParse != FIDO2::CTAP::CTAP2_OK)
-                {
-                    sendError(statusParse);
-                    return;
-                }
-                assert(request != nullptr);
+                Serial.printf("\n# Received Command\n");
+                serialDumpBuffer(commandBuffer.getPayload(), commandBuffer.getPayloadLength());
 
-                // execute
-                std::unique_ptr<FIDO2::CTAP::Command> response;
-                FIDO2::CTAP::Status statusProcess = FIDO2::Authenticator::processRequest(request.get(), response);
-                if (statusProcess != FIDO2::CTAP::CTAP2_OK)
-                {
-                    sendError(statusProcess);
-                    return;
-                }
+                // start keepalive
+                // keepaliveStart(statusCharacteristic);
 
-                std::unique_ptr<CBOR> cborResponse;
-                if (response != nullptr)
+                try
                 {
-                    // encode the response
-                    FIDO2::CTAP::Status statusEncode = FIDO2::CTAP::Response::encode(response.get(), cborResponse);
-                    if (statusEncode != FIDO2::CTAP::CTAP2_OK)
+                    // parse the request
+                    std::unique_ptr<FIDO2::CTAP::Command> request;
+                    FIDO2::CTAP::Status statusParse = FIDO2::CTAP::Request::parse(commandBuffer.getPayload(), commandBuffer.getPayloadLength(), request);
+                    assert(request != nullptr);
+
+                    // execute
+                    std::unique_ptr<FIDO2::CTAP::Command> response;
+                    FIDO2::CTAP::Status statusProcess = FIDO2::Authenticator::processRequest(request.get(), response);
+                    if (statusProcess != FIDO2::CTAP::CTAP2_OK)
                     {
-                        sendError(statusEncode);
-                        return;
+                        throw FIDO2::CTAP::Exception(statusProcess);
+                    }
+
+                    std::unique_ptr<CBOR> cborResponse;
+                    if (response != nullptr)
+                    {
+                        // encode the response
+                        FIDO2::CTAP::Status statusEncode = FIDO2::CTAP::Response::encode(response.get(), cborResponse);
+                        if (statusEncode != FIDO2::CTAP::CTAP2_OK)
+                        {
+                            throw FIDO2::CTAP::Exception(statusEncode);
+                        }
+                    }
+
+                    // send successful result
+                    uint8_t *payload = commandBuffer.getPayload();
+                    payload[0] = FIDO2::CTAP::CTAP2_OK;
+                    if (cborResponse != nullptr && cborResponse->length() > 0)
+                    {
+                        memcpy(payload + 1, cborResponse->to_CBOR(), cborResponse->length());
+                        commandBuffer.setPayloadLength(cborResponse->length() + 1);
+                    }
+                    else
+                    {
+                        commandBuffer.setPayloadLength(1);
                     }
                 }
-
-                // send successful result
-                uint8_t *payload = commandBuffer.getPayload();
-                payload[0] = FIDO2::CTAP::CTAP2_OK;
-                if (cborResponse != nullptr && cborResponse->length() > 0)
+                catch (FIDO2::CTAP::Exception &e)
                 {
-                    memcpy(payload + 1, cborResponse->to_CBOR(), cborResponse->length());
-                    commandBuffer.setPayloadLength(cborResponse->length() + 1);
-                }
-                else
-                {
+                    uint8_t *payload = commandBuffer.getPayload();
+                    payload[0] = e.getStatus();
                     commandBuffer.setPayloadLength(1);
                 }
+
+                // stop keepalive
+                // keepaliveStop();
 
                 sendResponse();
             }
@@ -199,24 +213,13 @@ namespace FIDO2
                         sendSize = copySize + 1;
                     }
 
-                    Serial.printf("seq: %d\n", seq);
-                    Serial.printf("size: %d\n", sendSize);
-                    serialDumpBuffer(sendBuffer, sendSize);
+                    // Serial.printf("seq: %d\n", seq);
+                    // Serial.printf("size: %d\n", sendSize);
+                    // serialDumpBuffer(sendBuffer, sendSize);
 
                     statusCharacteristic->setValue(sendBuffer, sendSize);
                     statusCharacteristic->notify();
                 }
-            }
-
-            void ControlPoint::sendError(uint8_t errorCode)
-            {
-                Serial.printf("Responding with error 0x%02x\n", errorCode);
-
-                uint8_t *payload = commandBuffer.getPayload();
-                payload[0] = errorCode;
-                commandBuffer.setPayloadLength(1);
-
-                sendResponse();
             }
 
             BLEUUID Status::UUID()

@@ -3,13 +3,46 @@
 template <size_t S>
 struct FixedBuffer
 {
+    /**
+     * @brief stored buffer value
+     */
     uint8_t value[S];
+    /**
+     * @brief stored value length
+     */
     size_t length;
-    const size_t size = S;
+    /**
+     * @brief maximal possible value length
+     */
+    const size_t maxLength = S;
 
-    void set(uint8_t *data, size_t len)
+    FixedBuffer() : length(0)
     {
-        assert(len <= size);
+        memset(value, 0, S);
+    }
+
+    FixedBuffer(const FixedBuffer<S> &b)
+    {
+        this->length = b.length;
+        memcpy(this->value, b.value, b.length);
+    }
+
+    FixedBuffer &operator=(const FixedBuffer<S> &b)
+    {
+        this->length = b.length;
+        memcpy(this->value, b.value, b.length);
+        return *this;
+    }
+
+    bool operator==(const FixedBuffer<S> &b)
+    {
+        return this->length == b.length && memcmp(this->value, b.value, b.length) == 0;
+    }
+
+    void alloc(const size_t len)
+    {
+        assert(len <= S);
+        length = len;
     }
 };
 

@@ -14,9 +14,17 @@
 
 namespace Display
 {
-    Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire);
+    static Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire);
 
-    bool needsUpdate = false;
+    enum Mode
+    {
+        MODE_LOGO = 1,
+        MODE_TEXT = 2,
+    };
+
+    static Mode mode = MODE_LOGO;
+
+    static bool needsUpdate = false;
 
     static const unsigned char PROGMEM icon_bluetooth[] = {
         B00100000,
@@ -31,13 +39,26 @@ namespace Display
         B00110000,
         B00100000,
         B00000000,
+    };
+
+    static const unsigned char PROGMEM icon_processing[] = {
         B00000000,
+        B00000000,
+        B10000001,
+        B01000010,
+        B00111100,
+        B11111111,
+        B00111100,
+        B01000010,
+        B10000001,
         B00000000,
         B00000000,
         B00000000,
     };
 
-    bool icons[1] = {};
+    bool icons[2] = {};
+
+    String text;
 
     void init()
     {
@@ -54,7 +75,27 @@ namespace Display
 
         if (icons[ICON_BLUETOOTH])
         {
-            display.drawBitmap(0, 0, icon_bluetooth, 8, 16, 1);
+            display.drawBitmap(SCREEN_WIDTH - 8, 0, icon_bluetooth, 8, 12, 1);
+        }
+        if (icons[ICON_PROCESSING])
+        {
+            display.drawBitmap(SCREEN_WIDTH - 8, 16, icon_processing, 8, 12, 1);
+        }
+
+        switch (mode)
+        {
+        case MODE_LOGO:
+            display.setTextSize(2);
+            display.setTextColor(SSD1306_WHITE);
+            display.setCursor((SCREEN_WIDTH - strlen(DEVICE_NAME) * 6 * 2) / 2, 8);
+            display.println(DEVICE_NAME);
+            break;
+        case MODE_TEXT:
+            display.setTextSize(1);
+            display.setTextColor(SSD1306_WHITE);
+            display.setCursor(0, 0);
+            display.println(text);
+            break;
         }
 
         display.display();
@@ -64,25 +105,26 @@ namespace Display
 
     void showLogo()
     {
-        display.clearDisplay();
-        display.setTextSize(2);
-        display.setTextColor(SSD1306_WHITE);
-        display.setCursor((SCREEN_WIDTH - strlen(DEVICE_NAME) * 6 * 2) / 2, 8);
-        display.println(DEVICE_NAME);
-        display.display();
+        mode = MODE_LOGO;
+        needsUpdate = true;
+    }
+
+    void showText(const char *_text)
+    {
+        mode = MODE_TEXT;
+        text = _text;
+        needsUpdate = true;
     }
 
     void enableIcon(int icon)
     {
         icons[icon] = 1;
-
         needsUpdate = true;
     }
 
     void disableIcon(int icon)
     {
         icons[icon] = 0;
-
         needsUpdate = true;
     }
 

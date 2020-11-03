@@ -2,46 +2,202 @@
 
 #include <YACL.h>
 
+#include "display/display.h"
+#include "keyboard/keyboard.h"
+
 #include "fido2/authenticator/authenticator.h"
 #include "fido2/ctap/ctap.h"
 
+#include "cred-storage/storage.h"
+
 #include "crypto/crypto.h"
 
-#include "util.h"
+#include "util/util.h"
 
 namespace FIDO2
 {
     namespace Authenticator
     {
+        void serialDumpRequest(const FIDO2::CTAP::Request::MakeCredential *request)
+        {
+            Serial.println("## MakeCredential");
+            Serial.printf(" * ClientDataHash\n");
+            serialDumpBuffer(request->clientDataHash, 32);
+            Serial.printf(" * RP id: %s\n", request->rp.id.c_str());
+            Serial.printf(" * RP name: %s\n", request->rp.name.c_str());
+            Serial.printf(" * User id:\n");
+            serialDumpBuffer(request->user.id.value, request->user.id.length);
+            Serial.printf(" * User name: %s\n", request->user.name.c_str());
+            Serial.printf(" * User display name: %s\n", request->user.displayName.c_str());
+            Serial.print(" * Algorithms: ");
+            for (auto it = request->algorithms.begin(); it != request->algorithms.end(); it++)
+            {
+                Serial.printf("%d ", *it);
+            }
+            Serial.println();
+            if (request->pinUvAuthParam)
+            {
+                Serial.printf(" * pinUvAuthParam:\n");
+                serialDumpBuffer(request->pinUvAuthParam->value, request->pinUvAuthParam->length);
+            }
+            Serial.printf(" * pinUvAuthProtocol: %d\n", request->pinUvAuthProtocol);
+            Serial.println(" * Exclude list");
+            for (auto it = request->excludeList.begin(); it != request->excludeList.end(); it++)
+            {
+                serialDumpBuffer(it->credentialId.value, it->credentialId.length);
+            }
+            Serial.println(" * Options");
+            Serial.printf("  * rk: %d\n", request->options.rk);
+            Serial.printf("  * up: %d\n", request->options.up);
+            Serial.printf("  * uv: %d\n", request->options.uv);
+        }
+
         FIDO2::CTAP::Status processRequest(const FIDO2::CTAP::Request::MakeCredential *request, std::unique_ptr<FIDO2::CTAP::Command> &response)
         {
-            std::unique_ptr<FIDO2::CTAP::Response::MakeCredential> resp = std::unique_ptr<FIDO2::CTAP::Response::MakeCredential>(new FIDO2::CTAP::Response::MakeCredential());
+            serialDumpRequest(request);
 
+            // 1. If authenticator supports clientPin and platform sends a zero length pinUvAuthParam,
+            // wait for user touch and then return either CTAP2_ERR_PIN_NOT_SET if pin is not set
+            // or CTAP2_ERR_PIN_INVALID if pin has been set.
             if (request->pinUvAuthParam != nullptr && request->pinUvAuthParam->length == 0)
             {
-                return FIDO2::CTAP::CTAP2_ERR_PIN_INVALID;
+                //
+                Display::showText("Use this device?\nTouch Ok to confirm");
+
+                if (Keyboard::waitForTouch('\n', 30000))
+                {
+                    return pinIsSet ? FIDO2::CTAP::CTAP2_ERR_PIN_INVALID : FIDO2::CTAP::CTAP2_ERR_PIN_NOT_SET;
+                }
+                else
+                {
+                    return FIDO2::CTAP::CTAP2_ERR_ACTION_TIMEOUT;
+                }
             }
 
+            // 2. If authenticator supports clientPin and pinUvAuthParam parameter is present and the pinUvAuthProtocol
+            // is not supported, return CTAP2_ERR_PIN_AUTH_INVALID error.
+
+            // 3. If the pubKeyCredParams parameter does not contain a valid COSEAlgorithmIdentifier value
+            // that is supported by the authenticator, terminate this procedure and return
+            // error code CTAP2_ERR_UNSUPPORTED_ALGORITHM.
+            bool hasSupportedAlgorithm = false;
+            for (auto it = request->algorithms.begin(); it != request->algorithms.end(); it++)
+            {
+                if (*it == -7)
+                {
+                    hasSupportedAlgorithm = true;
+                }
+            }
+
+            if (!hasSupportedAlgorithm)
+            {
+                RAISE(FIDO2::CTAP::Exception(FIDO2::CTAP::CTAP2_ERR_UNSUPPORTED_ALGORITHM));
+            }
+
+            // 4. If the options parameter is present, process all the options. If the option is known but not supported,
+            // terminate this procedure and return CTAP2_ERR_UNSUPPORTED_OPTION. If the option is known but not valid for
+            // this command, terminate this procedure and return CTAP2_ERR_INVALID_OPTION. Ignore any options that are not
+            // understood. Note that because this specification defines normative behaviors for them, all authenticators MUST
+            // understand the "rk", "up", and "uv" options.
+
+            // 5. Optionally, if the extensions parameter is present, process any extensions that this authenticator supports.
+            // Authenticator extension outputs generated by the authenticator extension processing are returned in the
+            // authenticator data.
+
+            // 6. If the excludeList parameter is present and contains a credential ID that is present on this
+            // authenticator and bound to the specified rpId
+            // ...
+            for (auto it = request->excludeList.begin(); it != request->excludeList.end(); it++)
+            {
+
+                CredentialsStorage::Credential *credential;
+                if (CredentialsStorage::getCredential(it->credentialId, &credential) && credential->rpId == request->rp.id)
+                {
+                    RAISE(CTAP::Exception(FIDO2::CTAP::CTAP2_ERR_CREDENTIAL_EXCLUDED));
+                }
+            }
+
+            // 7. If authenticator is not protected by some form of user verification and platform has set "uv"
+            // or pinUvAuthParam to get the user verification, return CTAP2_ERR_INVALID_OPTION.
+
+            // 8. If both "rk" and "uv" parameter values are set to false or omitted go to Step 10.
+            if (request->options.rk || request->options.uv)
+            {
+                // 9. If authenticator is protected by some form of user verification:
+
+                // If the request is passed with "uv" option, use built-in user verification method and verify the user.
+                if (request->options.uv)
+                {
+                }
+            }
+
+            // 10. Perform authenticator processing steps for the credProtect extension.
+
+            // 11. If the authenticator has a display, show the items contained within the user and rp parameter structures
+            // to the user. Alternatively, request user interaction in an authenticator-specific way (e.g., flash the LED light).
+            // Request permission to create a credential. If the user declines permission, return the CTAP2_ERR_OPERATION_DENIED
+            // error.
+
             //
+            {
+                char scrBuffer[100];
+                char rpid[20] = {};
+                strncpy(rpid, request->rp.name.c_str(), 19);
+                char uname[20] = {};
+                strncpy(uname, request->user.displayName.c_str(), 19);
+                sprintf(scrBuffer, "Create new?\n%s\n%s\nTouch Ok to confirm", rpid, uname);
+                Display::showText(scrBuffer);
+
+                if (!Keyboard::waitForTouch('\n', 30000))
+                {
+                    Display::showText("Canceled");
+                    RAISE(CTAP::Exception(FIDO2::CTAP::CTAP2_ERR_OPERATION_DENIED));
+                }
+
+                Display::showText("");
+            }
+
+            // 12. Generate a new credential key pair for the algorithm specified.
             Crypto::ECDSA::PublicKey publicKey;
             Crypto::ECDSA::getPublicKey(&publicKey);
 
-            // fill authenticator data structure
-            memcpy(resp->authenticatorData.attestedCredentialData.aaguid, aaguid.get_bytes(), 16);
-
-            size_t credentialIdLength = sizeof(resp->authenticatorData.attestedCredentialData.credentialId);
-            resp->authenticatorData.attestedCredentialData.credentialIdLen = credentialIdLength;
-
-            FIDO2::CTAP::Response::encodePublicKey(&publicKey, resp->authenticatorData.attestedCredentialData.publicKey);
-
             //
-            Crypto::SHA256::hash((const uint8_t *)request->rp.id.c_str(), request->rp.id.length(), resp->authenticatorData.rpIdHash);
+            std::unique_ptr<FIDO2::CTAP::Response::MakeCredential> resp = std::unique_ptr<FIDO2::CTAP::Response::MakeCredential>(new FIDO2::CTAP::Response::MakeCredential());
+
+            // aaguid
+            memcpy(resp->authenticatorData.attestedCredentialData.aaguid, aaguid.get_bytes(), 16);
 
             // flags
             resp->authenticatorData.flags.val = 0;
             resp->authenticatorData.flags.f.userPresent = true;
             resp->authenticatorData.flags.f.userVerified = true;
-            resp->authenticatorData.flags.f.attestationData = true;
+
+            // 13. If "rk" in options parameter is set to true:
+            //    * If a credential for the same RP ID and account ID already exists on the authenticator,
+            //      overwrite that credential.
+            //    * Store the user parameter along the newly-created key pair.
+            //    * If authenticator does not have enough internal storage to persist the new credential,
+            //      return CTAP2_ERR_KEY_STORE_FULL.
+            if (request->options.rk)
+            {
+                CredentialsStorage::Credential* credential = nullptr;
+                if (!CredentialsStorage::findCredential(request->rp.id, request->user.id, &credential))
+                {
+                    CredentialsStorage::createCredential(request->rp.id, request->user.id, &credential);
+                }
+
+                // 14. Generate an attestation statement for the newly-created key using clientDataHash.
+
+                // save credential id
+                resp->authenticatorData.attestedCredentialData.credentialIdLen = CREDENTIAL_ID_LENGTH;
+                memcpy(resp->authenticatorData.attestedCredentialData.credentialId, credential->id.value, CREDENTIAL_ID_LENGTH);
+
+                FIDO2::CTAP::Response::encodePublicKey(&publicKey, resp->authenticatorData.attestedCredentialData.publicKey);
+
+                Crypto::SHA256::hash((const uint8_t *)request->rp.id.c_str(), request->rp.id.length(), resp->authenticatorData.rpIdHash);
+
+                resp->authenticatorData.flags.f.attestationData = true;
+            }
 
             // sign
             sign(&resp->authenticatorData, request->clientDataHash, resp->signature, &resp->signatureSize);

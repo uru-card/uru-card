@@ -3,7 +3,7 @@
 #include <YACL.h>
 
 #include "fido2/ctap/ctap.h"
-#include "util.h"
+#include "util/util.h"
 #include <memory>
 
 namespace FIDO2
@@ -16,7 +16,7 @@ namespace FIDO2
             {
                 if (!cbor.is_pair())
                 {
-                    return CTAP1_ERR_INVALID_PARAMETER;
+                    RAISE(Exception(CTAP1_ERR_INVALID_PARAMETER));
                 }
 
                 CBORPair &cborPair = (CBORPair &)cbor;
@@ -25,7 +25,7 @@ namespace FIDO2
                 CBOR cborId = cborPair.find_by_key("id");
                 if (!cborId.is_string())
                 {
-                    return CTAP2_ERR_INVALID_CBOR;
+                    RAISE(Exception(CTAP2_ERR_INVALID_CBOR));
                 }
                 cborId.get_string(rp->id);
 
@@ -35,7 +35,7 @@ namespace FIDO2
                 {
                     if (!cborName.is_string())
                     {
-                        return CTAP2_ERR_CBOR_UNEXPECTED_TYPE;
+                        RAISE(Exception(CTAP2_ERR_CBOR_UNEXPECTED_TYPE));
                     }
 
                     cborName.get_string(rp->name);
@@ -47,7 +47,7 @@ namespace FIDO2
                 {
                     if (!cborIcon.is_string())
                     {
-                        return CTAP2_ERR_CBOR_UNEXPECTED_TYPE;
+                        RAISE(Exception(CTAP2_ERR_CBOR_UNEXPECTED_TYPE));
                     }
 
                     cborIcon.get_string(rp->icon);
@@ -60,7 +60,7 @@ namespace FIDO2
             {
                 if (!cbor.is_pair())
                 {
-                    return CTAP1_ERR_INVALID_PARAMETER;
+                    RAISE(Exception(CTAP1_ERR_INVALID_PARAMETER));
                 }
 
                 CBORPair &cborPair = (CBORPair &)cbor;
@@ -69,9 +69,10 @@ namespace FIDO2
                 CBOR cborId = cborPair.find_by_key("id");
                 if (!cborId.is_bytestring())
                 {
-                    return CTAP2_ERR_INVALID_CBOR;
+                    RAISE(Exception(CTAP2_ERR_INVALID_CBOR));
                 }
-                cborId.get_bytestring(user->id);
+                user->id.alloc(cborId.get_bytestring_len());
+                cborId.get_bytestring(user->id.value);
 
                 //
                 CBOR cborName = cborPair.find_by_key("name");
@@ -79,7 +80,7 @@ namespace FIDO2
                 {
                     if (!cborName.is_string())
                     {
-                        return CTAP2_ERR_CBOR_UNEXPECTED_TYPE;
+                        RAISE(Exception(CTAP2_ERR_CBOR_UNEXPECTED_TYPE));
                     }
 
                     cborName.get_string(user->name);
@@ -91,7 +92,7 @@ namespace FIDO2
                 {
                     if (!cborDisplayName.is_string())
                     {
-                        return CTAP2_ERR_CBOR_UNEXPECTED_TYPE;
+                        RAISE(Exception(CTAP2_ERR_CBOR_UNEXPECTED_TYPE));
                     }
 
                     cborDisplayName.get_string(user->displayName);
@@ -103,7 +104,7 @@ namespace FIDO2
                 {
                     if (!cborIcon.is_string())
                     {
-                        return CTAP2_ERR_CBOR_UNEXPECTED_TYPE;
+                        RAISE(Exception(CTAP2_ERR_CBOR_UNEXPECTED_TYPE));
                     }
 
                     cborIcon.get_string(user->icon);
@@ -116,7 +117,7 @@ namespace FIDO2
             {
                 if (!cbor.is_pair())
                 {
-                    return CTAP1_ERR_INVALID_PARAMETER;
+                    RAISE(Exception(CTAP1_ERR_INVALID_PARAMETER));
                 }
 
                 CBORPair &cborPair = (CBORPair &)cbor;
@@ -127,7 +128,7 @@ namespace FIDO2
                 CBOR cborX = cborPair.find_by_key(-2);
                 if (!cborX.is_bytestring() || cborX.get_bytestring_len() != 32)
                 {
-                    return CTAP1_ERR_INVALID_PARAMETER;
+                    RAISE(Exception(CTAP1_ERR_INVALID_PARAMETER));
                 }
 
                 cborX.get_bytestring(key->x);
@@ -136,7 +137,7 @@ namespace FIDO2
                 CBOR cborY = cborPair.find_by_key(-3);
                 if (!cborY.is_bytestring() || cborY.get_bytestring_len() != 32)
                 {
-                    return CTAP1_ERR_INVALID_PARAMETER;
+                    RAISE(Exception(CTAP1_ERR_INVALID_PARAMETER));
                 }
 
                 cborY.get_bytestring(key->y);

@@ -5,7 +5,7 @@
 #include <YACL.h>
 
 #include "fido2/ctap/ctap.h"
-#include "util.h"
+#include "util/util.h"
 
 namespace FIDO2
 {
@@ -81,7 +81,10 @@ namespace FIDO2
                 cborPair->append(0x04, options);
 
                 // max msg size
-                cborPair->append(0x05, response->maxMsgSize);
+                if (response->maxMsgSize != nullptr)
+                {
+                    cborPair->append(0x05, *response->maxMsgSize);
+                }
 
                 // List of supported PIN/UV protocol versions.
                 if (response->options.clientPinSupported)
@@ -91,7 +94,7 @@ namespace FIDO2
                     cborPair->append(0x06, cborVersions);
                 }
 
-                //
+                // Maximum number of credentials supported in credentialID list at a time by the authenticator.
                 cborPair->append(0x07, (uint8_t)8);
 
                 // maxCredentialIdLength
@@ -102,7 +105,7 @@ namespace FIDO2
                 cborTransports.append("ble");
                 cborPair->append(0x09, cborTransports);
 
-                //
+                // List of supported algorithms for credential generation.
                 CBORArray cborAlgorithms;
 
                 CBORPair cborAlgorithm;

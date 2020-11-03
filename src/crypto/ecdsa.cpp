@@ -2,33 +2,21 @@
 
 #include <uECC.h>
 
+#include "config.h"
 #include "crypto/crypto.h"
-#include "util.h"
 
 namespace Crypto
 {
     namespace ECDSA
     {
-        static const struct uECC_Curve_t *_es256_curve = uECC_secp256r1();
+        const struct uECC_Curve_t *_es256_curve = uECC_secp256r1();
 
-        uint8_t privateKey[32] ={ 0xDE, 0xAD, 0xDE, 0xAD, 0xDE, 0xAD, 0xDE, 0xAD, 0xDE,
-            0xAD, 0xDE, 0xAD, 0xDE, 0xAD, 0xDE, 0xAD, 0xDE, 0xAD, 0xDE, 0xAD, 0xDE, 0xAD,
-            0xDE, 0xAD, 0xDE, 0xAD, 0xDE, 0xAD, 0xDE, 0xAD, 0xDE, 0xAD };
-
-        void getPublicKey(PublicKey* publicKey)
+        void derivePublicKey(const PrivateKey *privateKey, PublicKey *publicKey)
         {
-            uECC_compute_public_key((const uint8_t *)privateKey, (uint8_t *)publicKey, _es256_curve);
+            uECC_compute_public_key(privateKey->key, (uint8_t *)publicKey, _es256_curve);
         }
 
-        void sign(const uint8_t *hash, uint8_t *signature)
-        {
-            Serial.println("Private Key:");
-            serialDumpBuffer(privateKey, 32);
-
-            uECC_sign(privateKey, hash, 32, signature, _es256_curve);
-        }
-
-        void encodeSignature(const uint8_t *signature, uint8_t *encodedSignature, size_t* encodedSize)
+        void encodeSignature(const uint8_t *signature, uint8_t *encodedSignature, size_t *encodedSize)
         {
             memset(encodedSignature, 0, 72);
 
@@ -61,5 +49,6 @@ namespace Crypto
 
             *encodedSize = 0x46 + pad_s + pad_r - lead_r - lead_s;
         }
+
     } // namespace ECDSA
 } // namespace Crypto

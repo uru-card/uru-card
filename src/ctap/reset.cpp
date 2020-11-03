@@ -3,7 +3,7 @@
 #include <YACL.h>
 
 #include "fido2/ctap/ctap.h"
-#include "util.h"
+#include "util/util.h"
 
 namespace FIDO2
 {

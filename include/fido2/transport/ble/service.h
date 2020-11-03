@@ -29,8 +29,6 @@ namespace FIDO2
 
             protected:
                 void sendResponse();
-
-                void sendError(uint8_t errorCode);
             };
 
             class ControlPointLength : public BLECharacteristicCallbacks
@@ -66,6 +64,10 @@ namespace FIDO2
             protected:
                 static BLEService *fido2Service;
             };
+
+            bool keepaliveStart(BLECharacteristic *statusCharacteristic);
+            void keepaliveStop();
+
         } // namespace BLE
     }     // namespace Transport
 } // namespace FIDO2

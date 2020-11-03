@@ -1,11 +1,11 @@
 #include <Arduino.h>
 
-#include "util.h"
+#include "util/util.h"
 
 /**
  * @brief Dump contents of the given buffer to the serial output
  */
-void serialDumpBuffer(uint8_t *buffer, size_t len)
+void serialDumpBuffer(const uint8_t *buffer, const size_t len)
 {
     const uint16_t pageSize = 40;
     uint16_t pages = (len / pageSize) + ((len % pageSize) ? 1 : 0);

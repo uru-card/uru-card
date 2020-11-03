@@ -5,7 +5,7 @@
 #include <YACL.h>
 
 #include "fido2/ctap/ctap.h"
-#include "util.h"
+#include "util/util.h"
 
 namespace FIDO2
 {
@@ -22,7 +22,7 @@ namespace FIDO2
             {
                 if (!cbor.is_array())
                 {
-                    return CTAP1_ERR_INVALID_PARAMETER;
+                    RAISE(Exception(CTAP1_ERR_INVALID_PARAMETER));
                 }
 
                 CBORArray &cborArray = (CBORArray &)cbor;
@@ -33,7 +33,7 @@ namespace FIDO2
 
                     if (!param.is_pair())
                     {
-                        return CTAP2_ERR_CBOR_UNEXPECTED_TYPE;
+                        RAISE(Exception(CTAP2_ERR_CBOR_UNEXPECTED_TYPE));
                     }
 
                     std::unique_ptr<PublicKeyCredentialDescriptor> cd(new PublicKeyCredentialDescriptor());
@@ -42,7 +42,7 @@ namespace FIDO2
                     CBOR cborType = param.find_by_key("type");
                     if (!cborType.is_string())
                     {
-                        return CTAP2_ERR_INVALID_CBOR;
+                        RAISE(Exception(CTAP2_ERR_INVALID_CBOR));
                     }
 
                     cborType.get_string(cd->type);
@@ -51,10 +51,10 @@ namespace FIDO2
                     CBOR cborId = param.find_by_key("id");
                     if(!cborId.is_bytestring() || cborId.get_bytestring_len() > CREDENTIAL_ID_LENGTH)
                     {
-                        return CTAP2_ERR_INVALID_CBOR;
+                        RAISE(Exception(CTAP2_ERR_INVALID_CBOR));
                     }
 
-                    cborId.get_bytestring(cd->credentialId);
+                    cborId.get_bytestring(cd->credentialId.value);
 
                     request->allowList.push_back(std::move(cd));
                 }
@@ -66,7 +66,7 @@ namespace FIDO2
             {
                 if (!cbor.is_pair())
                 {
-                    return CTAP1_ERR_INVALID_PARAMETER;
+                    RAISE(Exception(CTAP1_ERR_INVALID_PARAMETER));
                 }
 
                 return CTAP2_OK;
@@ -76,7 +76,7 @@ namespace FIDO2
             {
                 if (!cbor.is_pair())
                 {
-                    return CTAP1_ERR_INVALID_PARAMETER;
+                    RAISE(Exception(CTAP1_ERR_INVALID_PARAMETER));
                 }
 
                 return CTAP2_OK;
@@ -88,7 +88,7 @@ namespace FIDO2
 
                 if (!cbor.is_pair())
                 {
-                    return CTAP2_ERR_INVALID_CBOR;
+                    RAISE(Exception(CTAP2_ERR_INVALID_CBOR));
                 }
 
                 CBORPair &cborPair = (CBORPair &)cbor;
@@ -99,12 +99,12 @@ namespace FIDO2
                 CBOR cborRpId = cborPair.find_by_key((uint8_t)GetAssertion::keyRpId);
                 if (cborRpId.is_null())
                 {
-                    return CTAP2_ERR_MISSING_PARAMETER;
+                    RAISE(Exception(CTAP2_ERR_MISSING_PARAMETER));
                 }
 
                 if (!cborRpId.is_string())
                 {
-                    return CTAP1_ERR_INVALID_PARAMETER;
+                    RAISE(Exception(CTAP1_ERR_INVALID_PARAMETER));
                 }
 
                 cborRpId.get_string(rq->rpId);
@@ -113,17 +113,17 @@ namespace FIDO2
                 CBOR cborClientDataHash = cborPair.find_by_key((uint8_t)GetAssertion::keyClientDataHash);
                 if (cborClientDataHash.is_null())
                 {
-                    return CTAP2_ERR_MISSING_PARAMETER;
+                    RAISE(Exception(CTAP2_ERR_MISSING_PARAMETER));
                 }
 
                 if (!cborClientDataHash.is_bytestring())
                 {
-                    return CTAP1_ERR_INVALID_PARAMETER;
+                    RAISE(Exception(CTAP1_ERR_INVALID_PARAMETER));
                 }
 
                 if (cborClientDataHash.get_bytestring_len() != 32)
                 {
-                    return CTAP1_ERR_INVALID_LENGTH;
+                    RAISE(Exception(CTAP1_ERR_INVALID_LENGTH));
                 }
 
                 cborClientDataHash.get_bytestring(rq->clientDataHash);
@@ -134,7 +134,7 @@ namespace FIDO2
                 {
                     if (parseAllowList(cborAllowList, rq.get()) != CTAP2_OK)
                     {
-                        return CTAP2_ERR_INVALID_CBOR;
+                        RAISE(Exception(CTAP2_ERR_INVALID_CBOR));
                     }
                 }
 
@@ -144,7 +144,7 @@ namespace FIDO2
                 {
                     if (parseExtensions(cborExtensions, rq.get()) != CTAP2_OK)
                     {
-                        return CTAP2_ERR_INVALID_CBOR;
+                        RAISE(Exception(CTAP2_ERR_INVALID_CBOR));
                     }
                 }
 
@@ -154,7 +154,7 @@ namespace FIDO2
                 {
                     if (parseOptions(cborOptions, rq.get()) != CTAP2_OK)
                     {
-                        return CTAP2_ERR_INVALID_CBOR;
+                        RAISE(Exception(CTAP2_ERR_INVALID_CBOR));
                     }
                 }
 

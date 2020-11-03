@@ -4,13 +4,15 @@
 
 #include "fido2/authenticator/authenticator.h"
 
+#include "display/display.h"
+
 namespace FIDO2
 {
     namespace Authenticator
     {
         const FIDO2::UUID aaguid("63d9df31-662d-476a-a7a7-53b6aa038975");
 
-        const uint8_t certificate[] ={
+        const uint8_t certificate[] = {
             0x30, 0x82, 0x03, 0x11, 0x30, 0x82, 0x02, 0xb7, 0xa0, 0x03, 0x02, 0x01,
             0x02, 0x02, 0x01, 0x01, 0x30, 0x0a, 0x06, 0x08, 0x2a, 0x86, 0x48, 0xce,
             0x3d, 0x04, 0x03, 0x02, 0x30, 0x81, 0x92, 0x31, 0x0b, 0x30, 0x09, 0x06,
@@ -76,29 +78,70 @@ namespace FIDO2
             0x18, 0x8d, 0x83, 0xe6, 0x90, 0xdc, 0xc7, 0x60, 0x6f, 0x9b, 0x02, 0x21,
             0x00, 0x9b, 0x40, 0xae, 0xcf, 0x0c, 0x6e, 0x9f, 0xc1, 0x6c, 0x92, 0xc8,
             0xe4, 0x4d, 0x71, 0x05, 0x85, 0x92, 0xd9, 0xcb, 0x42, 0xd3, 0xf0, 0xdd,
-            0xe4, 0x02, 0x3d, 0x63, 0x1c, 0x77, 0x76, 0x30, 0x31 };
+            0xe4, 0x02, 0x3d, 0x63, 0x1c, 0x77, 0x76, 0x30, 0x31};
 
         const size_t certificateSize = sizeof(certificate);
 
+        Crypto::ECDSA::PrivateKey agreementKey = {};
+
+        void reset()
+        {
+        }
+
+        void powerUp()
+        {
+            Serial.println("FIDO2 Authenticator Power Up procedure");
+
+            esp_fill_random(agreementKey.key, 32);
+
+            esp_fill_random(pinUvAuthToken, 16);
+        }
+
+        static Status status = STATUS_IDLE;
+
+        uint8_t getStatus()
+        {
+            return (uint8_t)status;
+        }
+
+        void setStatus(Status _status)
+        {
+            status = _status;
+        }
+
         FIDO2::CTAP::Status processRequest(const FIDO2::CTAP::Command *request, std::unique_ptr<FIDO2::CTAP::Command> &response)
         {
+            status = STATUS_PROCESSING;
+
+            Display::enableIcon(ICON_PROCESSING);
+
+            FIDO2::CTAP::Status ret = FIDO2::CTAP::CTAP1_ERR_INVALID_COMMAND;
             switch (request->getCommandCode())
             {
             case FIDO2::CTAP::authenticatorGetInfo:
-                return processRequest(static_cast<const FIDO2::CTAP::Request::GetInfo *>(request), response);
+                ret = processRequest(static_cast<const FIDO2::CTAP::Request::GetInfo *>(request), response);
+                break;
             case FIDO2::CTAP::authenticatorGetAssertion:
-                return processRequest((const FIDO2::CTAP::Request::GetAssertion *)request, response);
+                ret = processRequest((const FIDO2::CTAP::Request::GetAssertion *)request, response);
+                break;
             case FIDO2::CTAP::authenticatorMakeCredential:
-                return processRequest((const FIDO2::CTAP::Request::MakeCredential *)request, response);
+                ret = processRequest((const FIDO2::CTAP::Request::MakeCredential *)request, response);
+                break;
             case FIDO2::CTAP::authenticatorClientPIN:
-                return processRequest((const FIDO2::CTAP::Request::ClientPIN *)request, response);
+                ret = processRequest((const FIDO2::CTAP::Request::ClientPIN *)request, response);
+                break;
             case FIDO2::CTAP::authenticatorReset:
-                return processRequest((const FIDO2::CTAP::Request::Reset *)request, response);
+                ret = processRequest((const FIDO2::CTAP::Request::Reset *)request, response);
+                break;
             default:
                 break;
             }
 
-            return FIDO2::CTAP::CTAP1_ERR_INVALID_COMMAND;
+            Display::disableIcon(ICON_PROCESSING);
+
+            status = STATUS_IDLE;
+
+            return ret;
         }
 
     } // namespace Authenticator

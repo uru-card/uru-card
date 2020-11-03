@@ -6,7 +6,7 @@
 
 #include "fido2/authenticator/authenticator.h"
 #include "fido2/ctap/ctap.h"
-#include "util.h"
+#include "util/util.h"
 
 namespace FIDO2
 {
@@ -19,59 +19,66 @@ namespace FIDO2
                 return authenticatorMakeCredential;
             }
 
-            Status parsePubKeyCredParams(CBOR &cbor, MakeCredential *request)
+            /**
+             *
+             */
+            static Status parsePubKeyCredParams(CBOR &cbor, MakeCredential *request)
             {
                 if (!cbor.is_array())
                 {
-                    return CTAP1_ERR_INVALID_PARAMETER;
+                    RAISE(Exception(CTAP1_ERR_INVALID_PARAMETER));
                 }
 
                 CBORArray &cborArray = (CBORArray &)cbor;
-
-                for (size_t i = 0; i < cborArray.n_elements(); i++)
+                for (auto i = 0; i < cborArray.n_elements(); i++)
                 {
                     CBOR param = cborArray.at(i);
-
                     if (!param.is_pair())
                     {
-                        return CTAP2_ERR_CBOR_UNEXPECTED_TYPE;
-                    }
-
-                    CBORPair &paramPair = (CBORPair &)param;
-
-                    //
-                    CBOR cborType = paramPair.find_by_key("type");
-                    if (!cborType.is_string())
-                    {
-                        return CTAP2_ERR_MISSING_PARAMETER;
+                        RAISE(Exception(CTAP2_ERR_CBOR_UNEXPECTED_TYPE));
                     }
 
                     String type;
-                    cborType.get_string(type);
-                    if (type != "public-key")
+                    int16_t alg = 0;
+
+                    CBORPair &paramPair = (CBORPair &)param;
+                    for (auto j = 0; j < paramPair.n_elements(); j++)
                     {
-                        return CTAP2_ERR_UNSUPPORTED_ALGORITHM;
+                        CBOR key = paramPair.key_at(j);
+                        CBOR value = paramPair.at(j);
+
+                        String skey;
+                        key.get_string(skey);
+
+                        if (skey == "alg" && (value.is_int8() || value.is_int16()))
+                        {
+                            alg = (int16_t)value;
+                        }
+                        else if (skey == "type" && value.is_string())
+                        {
+                            value.get_string(type);
+                        }
                     }
 
-                    //
-                    CBOR cborAlg = paramPair.find_by_key("alg");
-                    if (!cborAlg.is_int8())
+                    if (type != "public-key" || alg == 0)
                     {
-                        return CTAP2_ERR_MISSING_PARAMETER;
+                        RAISE(Exception(CTAP2_ERR_UNSUPPORTED_ALGORITHM));
                     }
 
-                    int alg = (int)cborAlg;
                     request->algorithms.push_back(alg);
                 }
 
                 return CTAP2_OK;
             }
 
-            Status parseExcludeList(CBOR &cbor, MakeCredential *request)
+            /**
+             * @brief
+             */
+            static Status parseExcludeList(CBOR &cbor, MakeCredential *request)
             {
                 if (!cbor.is_array())
                 {
-                    return CTAP1_ERR_INVALID_PARAMETER;
+                    RAISE(Exception(CTAP1_ERR_INVALID_PARAMETER));
                 }
 
                 CBORArray &cborArray = (CBORArray &)cbor;
@@ -82,28 +89,101 @@ namespace FIDO2
 
                     if (!param.is_pair())
                     {
-                        return CTAP2_ERR_CBOR_UNEXPECTED_TYPE;
+                        RAISE(Exception(CTAP2_ERR_CBOR_UNEXPECTED_TYPE));
                     }
+
+                    PublicKeyCredentialDescriptor credDescriptor;
+
+                    CBORPair &paramPair = (CBORPair &)param;
+                    for (auto j = 0; j < paramPair.n_elements(); j++)
+                    {
+                        CBOR key = paramPair.key_at(j);
+                        CBOR value = paramPair.at(j);
+
+                        String skey;
+                        key.get_string(skey);
+
+                        if (skey == "id")
+                        {
+                            if (!value.is_bytestring())
+                            {
+                                RAISE(Exception(CTAP1_ERR_INVALID_PARAMETER));
+                            }
+                            size_t length = value.get_bytestring_len();
+                            if (length > credDescriptor.credentialId.maxLength)
+                            {
+                                RAISE(Exception(CTAP1_ERR_INVALID_PARAMETER));
+                            }
+                            credDescriptor.credentialId.alloc(length);
+                            value.get_bytestring(credDescriptor.credentialId.value);
+                        }
+                        if (skey == "type")
+                        {
+                            if (!value.is_string())
+                            {
+                                RAISE(Exception(CTAP1_ERR_INVALID_PARAMETER));
+                            }
+                            value.get_string(credDescriptor.type);
+                        }
+                    }
+
+                    if (credDescriptor.type == "" || credDescriptor.credentialId.length == 0)
+                    {
+                        RAISE(Exception(CTAP2_ERR_MISSING_PARAMETER));
+                    }
+
+                    request->excludeList.push_back(credDescriptor);
                 }
 
                 return CTAP2_OK;
             }
 
-            Status parseExtensions(CBOR &cbor, MakeCredential *request)
+            static Status parseExtensions(CBOR &cbor, MakeCredential *request)
             {
                 if (!cbor.is_pair())
                 {
-                    return CTAP1_ERR_INVALID_PARAMETER;
+                    RAISE(Exception(CTAP1_ERR_INVALID_PARAMETER));
                 }
 
                 return CTAP2_OK;
             }
 
-            Status parseOptions(CBOR &cbor, MakeCredential *request)
+            /**
+             *
+             * @param cbor
+             * @param request
+             */
+            static Status parseOptions(CBOR &cbor, MakeCredential *request)
             {
                 if (!cbor.is_pair())
                 {
-                    return CTAP1_ERR_INVALID_PARAMETER;
+                    RAISE(Exception(CTAP1_ERR_INVALID_PARAMETER));
+                }
+
+                CBORPair &paramPair = (CBORPair &)cbor;
+                for (auto j = 0; j < paramPair.n_elements(); j++)
+                {
+                    CBOR key = paramPair.key_at(j);
+                    if (!key.is_string())
+                    {
+                        RAISE(Exception(CTAP1_ERR_INVALID_PARAMETER));
+                    }
+                    String skey;
+                    key.get_string(skey);
+
+                    CBOR value = paramPair.at(j);
+                    if (skey == "rk")
+                    {
+                        request->options.rk = (bool)value;
+                    }
+                    else if (skey == "uv")
+                    {
+                        request->options.uv = (bool)value;
+                    }
+                    else if (skey == "up")
+                    {
+                        request->options.up = (bool)value;
+                    }
                 }
 
                 return CTAP2_OK;
@@ -115,7 +195,7 @@ namespace FIDO2
 
                 if (!cbor.is_pair())
                 {
-                    return CTAP2_ERR_INVALID_CBOR;
+                    RAISE(Exception(CTAP2_ERR_INVALID_CBOR));
                 }
 
                 CBORPair &cborPair = (CBORPair &)cbor;
@@ -127,17 +207,17 @@ namespace FIDO2
                 CBOR cborClientDataHash = cborPair.find_by_key((uint8_t)MakeCredential::keyclientDataHash);
                 if (cborClientDataHash.is_null())
                 {
-                    return CTAP2_ERR_MISSING_PARAMETER;
+                    RAISE(Exception(CTAP2_ERR_MISSING_PARAMETER));
                 }
 
                 if (!cborClientDataHash.is_bytestring())
                 {
-                    return CTAP1_ERR_INVALID_PARAMETER;
+                    RAISE(Exception(CTAP1_ERR_INVALID_PARAMETER));
                 }
 
                 if (cborClientDataHash.get_bytestring_len() != 32)
                 {
-                    return CTAP1_ERR_INVALID_LENGTH;
+                    RAISE(Exception(CTAP1_ERR_INVALID_LENGTH));
                 }
 
                 cborClientDataHash.get_bytestring(rq->clientDataHash);
@@ -148,17 +228,17 @@ namespace FIDO2
                 CBOR cborRelyingParty = cborPair.find_by_key((uint8_t)MakeCredential::keyRp);
                 if (cborRelyingParty.is_null())
                 {
-                    return CTAP2_ERR_MISSING_PARAMETER;
+                    RAISE(Exception(CTAP2_ERR_MISSING_PARAMETER));
                 }
 
                 if (!cborRelyingParty.is_pair())
                 {
-                    return CTAP2_ERR_INVALID_CBOR;
+                    RAISE(Exception(CTAP2_ERR_INVALID_CBOR));
                 }
 
                 if (parseRpEntity(cborRelyingParty, &rq->rp) != CTAP2_OK)
                 {
-                    return CTAP2_ERR_INVALID_CBOR;
+                    RAISE(Exception(CTAP2_ERR_INVALID_CBOR));
                 }
 
                 // user (0x03)
@@ -167,17 +247,17 @@ namespace FIDO2
                 CBOR cborUser = cborPair.find_by_key((uint8_t)MakeCredential::keyUser);
                 if (cborUser.is_null())
                 {
-                    return CTAP2_ERR_MISSING_PARAMETER;
+                    RAISE(Exception(CTAP2_ERR_MISSING_PARAMETER));
                 }
 
                 if (!cborUser.is_pair())
                 {
-                    return CTAP2_ERR_INVALID_CBOR;
+                    RAISE(Exception(CTAP2_ERR_INVALID_CBOR));
                 }
 
                 if (parseUserEntity(cborUser, &rq->user) != CTAP2_OK)
                 {
-                    return CTAP2_ERR_INVALID_CBOR;
+                    RAISE(Exception(CTAP2_ERR_INVALID_CBOR));
                 }
 
                 // pubKeyCredParams (0x04)
@@ -185,12 +265,12 @@ namespace FIDO2
                 CBOR cborKeyCredParms = cborPair.find_by_key((uint8_t)MakeCredential::keyPubKeyCredParams);
                 if (cborKeyCredParms.is_null())
                 {
-                    return CTAP2_ERR_MISSING_PARAMETER;
+                    RAISE(Exception(CTAP2_ERR_MISSING_PARAMETER));
                 }
 
                 if (parsePubKeyCredParams(cborKeyCredParms, rq.get()) != CTAP2_OK)
                 {
-                    return CTAP2_ERR_INVALID_CBOR;
+                    RAISE(Exception(CTAP2_ERR_INVALID_CBOR));
                 }
 
                 // excludeList (0x05)
@@ -200,7 +280,7 @@ namespace FIDO2
                 {
                     if (parseExcludeList(cborExcludeList, rq.get()) != CTAP2_OK)
                     {
-                        return CTAP2_ERR_INVALID_CBOR;
+                        RAISE(Exception(CTAP2_ERR_INVALID_CBOR));
                     }
                 }
 
@@ -211,7 +291,7 @@ namespace FIDO2
                 {
                     if (parseExtensions(cborExtensions, rq.get()) != CTAP2_OK)
                     {
-                        return CTAP2_ERR_INVALID_CBOR;
+                        RAISE(Exception(CTAP2_ERR_INVALID_CBOR));
                     }
                 }
 
@@ -222,7 +302,7 @@ namespace FIDO2
                 {
                     if (parseOptions(cborOptions, rq.get()) != CTAP2_OK)
                     {
-                        return CTAP2_ERR_INVALID_CBOR;
+                        RAISE(Exception(CTAP2_ERR_INVALID_CBOR));
                     }
                 }
 
@@ -233,7 +313,7 @@ namespace FIDO2
                 {
                     if (!cborPinUvAuthParam.is_bytestring() || cborPinUvAuthParam.get_bytestring_len() > 16)
                     {
-                        return CTAP2_ERR_INVALID_CBOR;
+                        RAISE(Exception(CTAP2_ERR_INVALID_CBOR));
                     }
 
                     rq->pinUvAuthParam = std::unique_ptr<FixedBuffer16>(new FixedBuffer16());
@@ -270,7 +350,9 @@ namespace FIDO2
 
                 // authData (0x02)
                 CBOR cborAuthData;
-                cborAuthData.encode((uint8_t *)&response->authenticatorData, sizeof(AuthenticatorData));
+                size_t encodeSize = response->authenticatorData.flags.f.attestationData ? sizeof(AuthenticatorData) : sizeof(AuthenticatorData) - sizeof(AttestedCredentialData);
+
+                cborAuthData.encode((uint8_t *)&response->authenticatorData, encodeSize);
                 cborPair->append(0x02, cborAuthData);
 
                 // attStmt (0x03)

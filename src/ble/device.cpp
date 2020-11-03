@@ -69,10 +69,12 @@ namespace BLE
 
     void Server::onConnect(BLEServer *pServer) {
         Display::enableIcon(ICON_BLUETOOTH);
+        Display::showText("");
     }
 
     void Server::onDisconnect(BLEServer *pServer) {
         Display::disableIcon(ICON_BLUETOOTH);
+        Display::showLogo();
     }
 
 } // namespace BLE
