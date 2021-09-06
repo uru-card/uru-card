@@ -70,11 +70,15 @@ namespace BLE
     void Server::onConnect(BLEServer *pServer) {
         Display::enableIcon(ICON_BLUETOOTH);
         Display::showText("");
+
+        BLEDevice::stopAdvertising();
     }
 
     void Server::onDisconnect(BLEServer *pServer) {
         Display::disableIcon(ICON_BLUETOOTH);
         Display::showLogo();
+
+        BLEDevice::startAdvertising();
     }
 
 } // namespace BLE
