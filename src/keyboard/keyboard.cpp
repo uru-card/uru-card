@@ -1,5 +1,7 @@
 #include <Arduino.h>
 
+#if defined(HARDWARE_KEYBOARD)
+
 #include <Adafruit_MPR121.h>
 
 #include "keyboard/keyboard.h"
@@ -64,3 +66,5 @@ namespace Keyboard
     }
 
 } // namespace Keyboard
+
+#endif

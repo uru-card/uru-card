@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(FIDO2_TRANSPORT_BLE)
+
 #include <BLESecurity.h>
 
 namespace BLE
@@ -18,3 +20,5 @@ namespace BLE
         virtual bool onConfirmPIN(uint32_t pin);
     };
 } // namespace BLE
+
+#endif

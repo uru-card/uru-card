@@ -64,6 +64,7 @@ namespace FIDO2
                 //
                 Display::showText("Use this device?\nTouch Ok to confirm");
 
+#if defined(HARDWARE_KEYBOARD)
                 if (Keyboard::waitForTouch('\n', 30000))
                 {
                     return pinIsSet ? FIDO2::CTAP::CTAP2_ERR_PIN_INVALID : FIDO2::CTAP::CTAP2_ERR_PIN_NOT_SET;
@@ -72,6 +73,7 @@ namespace FIDO2
                 {
                     return FIDO2::CTAP::CTAP2_ERR_ACTION_TIMEOUT;
                 }
+#endif
             }
 
             // 2. If authenticator supports clientPin and pinUvAuthParam parameter is present and the pinUvAuthProtocol
@@ -148,11 +150,13 @@ namespace FIDO2
                 sprintf(scrBuffer, "Create new?\n%s\n%s\nTouch Ok to confirm", rpid, uname);
                 Display::showText(scrBuffer);
 
+#if defined(HARDWARE_KEYBOARD)
                 if (!Keyboard::waitForTouch('\n', 30000))
                 {
                     Display::showText("Canceled");
                     RAISE(CTAP::Exception(FIDO2::CTAP::CTAP2_ERR_OPERATION_DENIED));
                 }
+#endif
 
                 Display::showText("");
             }

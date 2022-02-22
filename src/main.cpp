@@ -21,8 +21,10 @@ void setup()
     // Serial.setDebugOutput(true);
     // esp_log_level_set("*", ESP_LOG_DEBUG);
 
+#if defined(HARDWARE_DISPLAY)
     Display::init();
     Display::showLogo();
+#endif
 
     if (!Crypto::init())
     {
@@ -35,24 +37,32 @@ void setup()
         Crypto::configure();
     }
 
+#if defined(HARDWARE_KEYBOARD)
     Keyboard::init();
-
-    BLE::init();
+#endif
 
     FIDO2::Authenticator::powerUp();
+
+#if defined(FIDO2_TRANSPORT_BLE)
+    BLE::init();
 
     FIDO2::Transport::BLE::Service::init();
 
     BLE::start();
+#endif
 
     delay(1000);
 }
 
 void loop()
 {
+#if defined(HARDWARE_DISPLAY)
     Display::update();
+#endif
 
+#if defined(HARDWARE_KEYBOARD)
     Keyboard::update();
+#endif 
 
     delay(50);
 }

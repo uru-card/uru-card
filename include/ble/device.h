@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(FIDO2_TRANSPORT_BLE)
+
 #include <BLEServer.h>
 
 namespace BLE
@@ -16,3 +18,5 @@ namespace BLE
         void onDisconnect(BLEServer *pServer);
     };
 } // namespace BLE
+
+#endif

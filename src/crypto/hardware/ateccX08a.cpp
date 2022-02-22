@@ -1,13 +1,13 @@
 #include <Arduino.h>
 
-#include <SparkFun_ATECCX08a_Arduino_Library.h>
-
 #include "config.h"
 #include "crypto/crypto.h"
 
 #include "util/util.h"
 
 #if defined(HARDWARE_CRYPTO)
+
+#include <SparkFun_ATECCX08a_Arduino_Library.h>
 
 namespace Crypto
 {

@@ -1,5 +1,7 @@
 #include <Arduino.h>
 
+#if defined(FIDO2_TRANSPORT_BLE)
+
 #include <BLE2902.h>
 #include <BLEDevice.h>
 #include <BLESecurity.h>
@@ -82,3 +84,5 @@ namespace BLE
     }
 
 } // namespace BLE
+
+#endif
