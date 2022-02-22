@@ -1,5 +1,7 @@
 #include <Arduino.h>
 
+#if defined(FIDO2_TRANSPORT_BLE)
+
 #include <BLEService.h>
 
 #include "fido2/authenticator/authenticator.h"
@@ -69,3 +71,5 @@ namespace FIDO2
         } // namespace BLE
     }     // namespace Transport
 } // namespace FIDO2
+
+#endif
