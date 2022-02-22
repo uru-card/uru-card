@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <BLEDevice.h>
 
 #include "esp32-hal-log.h"
 
@@ -7,12 +6,21 @@
 
 #include "fido2/authenticator/authenticator.h"
 
+#include "crypto/crypto.h"
+
+#if defined(FIDO2_TRANSPORT_BLE)
+#include <BLEDevice.h>
 #include "ble/device.h"
 #include "fido2/transport/ble/service.h"
+#endif 
 
+#if defined(HARDWARE_DISPLAY)
 #include "display/display.h"
+#endif
+
+#if defined(HARDWARE_KEYBOARD)
 #include "keyboard/keyboard.h"
-#include "crypto/crypto.h"
+#endif
 
 void setup()
 {

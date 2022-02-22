@@ -1,10 +1,11 @@
+#include <memory>
+
 #include <Arduino.h>
 
 #include <YACL.h>
 
 #include "fido2/ctap/ctap.h"
 #include "util/util.h"
-#include <memory>
 
 namespace FIDO2
 {
