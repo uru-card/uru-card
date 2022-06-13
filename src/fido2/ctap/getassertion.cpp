@@ -204,7 +204,7 @@ namespace FIDO2
 
                 // user (0x04)
                 CBOR cborUser;
-                cborUser.encode(response->user.id.value, 64);
+                cborUser.encode(response->user.id.value, response->user.id.length);
                 CBORPair cborUserPair;
                 cborUserPair.append("id", cborUser);
                 cborPair->append(0x04, cborUserPair);
