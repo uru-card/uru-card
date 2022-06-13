@@ -203,6 +203,11 @@ namespace FIDO2
                 cborPair->append(0x03, cborSignature);
 
                 // user (0x04)
+                CBOR cborUser;
+                cborUser.encode(response->user.id.value, 64);
+                CBORPair cborUserPair;
+                cborUserPair.append("id", cborUser);
+                cborPair->append(0x04, cborUserPair);
 
                 // numberOfCredentials (0x05)
 

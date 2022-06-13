@@ -98,7 +98,7 @@ namespace FIDO2
                 cborPair->append(0x07, (uint8_t)8);
 
                 // maxCredentialIdLength
-                cborPair->append(0x08, (uint8_t)16);
+                cborPair->append(0x08, (uint8_t)CREDENTIAL_ID_LENGTH);
 
                 // List of supported transports
                 CBORArray cborTransports;
