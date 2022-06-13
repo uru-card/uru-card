@@ -42,15 +42,14 @@ namespace CredentialsStorage
 
     bool createCredential(const String &rpId, const FixedBuffer64 &userId, Credential **credential)
     {
-        std::unique_ptr<Credential> newCredential;
+        std::unique_ptr<Credential> newCredential = std::unique_ptr<Credential>(new Credential());
 
         esp_fill_random(newCredential->id.value, newCredential->id.maxLength);
         newCredential->rpId = rpId;
         newCredential->userId = userId;
 
-        credentials.push_back(std::unique_ptr<Credential>(newCredential.release()));
-
         *credential = newCredential.get();
+        credentials.push_back(std::unique_ptr<Credential>(newCredential.release()));
 
         return true;
     }
