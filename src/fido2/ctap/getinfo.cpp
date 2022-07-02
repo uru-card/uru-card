@@ -102,7 +102,11 @@ namespace FIDO2
 
                 // List of supported transports
                 CBORArray cborTransports;
+#if defined(FIDO2_TRANSPORT_BLE)
                 cborTransports.append("ble");
+#elif defined(FIDO2_TRANSPORT_USB)
+                cborTransports.append("usb");
+#endif
                 cborPair->append(0x09, cborTransports);
 
                 // List of supported algorithms for credential generation.
