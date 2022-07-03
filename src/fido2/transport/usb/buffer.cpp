@@ -44,7 +44,7 @@ namespace FIDO2
 
                 memcpy(buffer + position, data + CID_LENGTH + 1, length - CID_LENGTH - 1);
                 const uint16_t p_len = getPayloadLength();
-                position += MIN(p_len - position - 1, length - CID_LENGTH - 1);
+                position += MIN(p_len - position + 7, length - CID_LENGTH - 1);
 
                 return length;
             }

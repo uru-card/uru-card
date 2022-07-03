@@ -2,7 +2,6 @@
 
 #include "ctaphid.h"
 #define EPNUM_HID   0x03
-#define REPORT_ID   1
 #if CFG_TUD_HID
 
 CTAPHID::CTAPHID(uint8_t reportid)
@@ -25,7 +24,6 @@ bool CTAPHID::begin(char* str)
   EspTinyUSB::hid_report_desc_len += TUD_HID_INOUT_DESC_LEN;
   log_d("begin len: %d", EspTinyUSB::hid_report_desc_len);
 
-  report_id = REPORT_ID;
   return EspTinyUSB::begin(str, 6);
 }
 

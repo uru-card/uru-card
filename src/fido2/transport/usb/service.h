@@ -23,9 +23,14 @@ namespace FIDO2
             static const uint8_t CMD_WINK = 0x08;
             static const uint8_t CMD_LOCK = 0x04;
 
+            // U2F
+            static const uint8_t U2F_REGISTRATION = 0x01;
+            static const uint8_t U2F_AUTHENTICATION = 0x01;
+
             void processRequest();
             void processINIT();
             void processCBOR();
+            void processMSG();
             void sendResponse();
 
             class Service
@@ -33,6 +38,7 @@ namespace FIDO2
             public:
                 static bool init();
                 static void setCallback(void (*fun)(uint8_t const* buffer, uint16_t bufsize));
+                static void flush();
             };
 
             class HIDCallbacksImpl : public HIDCallbacks {

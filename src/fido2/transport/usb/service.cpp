@@ -12,9 +12,7 @@
 #include "display/display.h"
 #include "util/util.h"
 
-// #define GATT_DEVICE_NAME DEVICE_NAME
-// #define GATT_MODEL_NUMBER "URU Card v1"
-// #define GATT_FIRMWARE_REVISION "1.0.0"
+#define HID_RESPONSE_BUFSIZE CFG_TUD_HID_BUFSIZE
 
 namespace FIDO2
 {
@@ -23,17 +21,24 @@ namespace FIDO2
         namespace USB
         {
 
-            static CTAPHID dev;
+            static CTAPHID dev(0);
             static void (*callback)(uint8_t const* buffer, uint16_t bufsize);
             static const uint8_t cid_broadcast[CID_LENGTH] = {0xff, 0xff, 0xff, 0xff};
+
+            static SemaphoreHandle_t xBinarySemaphore;
+            static uint8_t sendBuffer[HID_RESPONSE_BUFSIZE];
 
             void dummyCallback(uint8_t const* buffer, uint16_t bufsize){}
             void callbackStr(std::string str){
                 (*callback)((const uint8_t*)str.c_str(), str.length());
             }
+            void callbackCStr(uint8_t const* buffer, uint16_t bufsize){
+                (*callback)(buffer, bufsize);
+            }
 
             bool Service::init()
             {
+                xBinarySemaphore = xSemaphoreCreateBinary();
                 // dev.deviceID(0x20a0, 0x42b1);
                 dev.setCallbacks(new HIDCallbacksImpl());
                 callback = &dummyCallback;
@@ -41,11 +46,18 @@ namespace FIDO2
             }
 
             void Service::setCallback(void (*fun)(uint8_t const* buffer, uint16_t bufsize)){
-              callback = fun;
+                callback = fun;
+            }
+
+            void Service::flush(){
+                if(xSemaphoreTake(xBinarySemaphore, 0) == pdTRUE){
+                    processRequest();
+                }
             }
 
             void HIDCallbacksImpl::onData(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize){
-                (*callback)(buffer, bufsize);
+                callbackStr("Command received");
+                callbackCStr(buffer, bufsize);
                 // callbackStr("Command buffer init sizeof(buffer): " + std::to_string(sizeof(buffer)) + ", bufsize: " + std::to_string(bufsize));
                 if(bufsize < CID_LENGTH + 1){
                   return;
@@ -62,10 +74,9 @@ namespace FIDO2
                     }
                 }
 
-                callbackStr("Buffer length: " + std::to_string(commandBuffer.getBufferLength()) + ", payload length: " + std::to_string(commandBuffer.getPayloadLength()));
                 if (commandBuffer.isComplete()){
-                    callbackStr("Command received completion");
-                    processRequest();
+                    // processRequest();
+                    xSemaphoreGive(xBinarySemaphore);
                 }
             }
 
@@ -79,6 +90,22 @@ namespace FIDO2
                 case CMD_CBOR:
                     processCBOR();
                     break;
+                case CMD_MSG:
+                    processMSG();
+                    break;
+                case CMD_PING:
+                    Serial.println("PING");
+                    sendResponse();
+                    break;
+                case CMD_CANCEL:
+                    Serial.println("CANCEL");
+                    break;
+                case CMD_ERROR:
+                    Serial.println("ERROR");
+                    break;
+                case CMD_KEEPALIVE:
+                    Serial.println("KEEPALIVE");
+                    break;
                 case CMD_WINK:
 #if defined(LED_BUILTIN)
                     digitalWrite(LED_BUILTIN, HIGH);
@@ -87,17 +114,9 @@ namespace FIDO2
 #endif
                     sendResponse();
                     break;
-                // case CMD_PING:
-                //     Serial.println("PING");
-                //     statusCharacteristic->setValue(commandBuffer.getBuffer(), commandBuffer.getBufferLength());
-                //     statusCharacteristic->notify();
-                //     break;
-                // case CMD_MSG:
-                //     processMessage();
-                //     break;
-                // case CMD_CANCEL:
-                //     Serial.println("CANCEL");
-                //     break;
+                case CMD_LOCK:
+                    Serial.println("LOCK");
+                    break;
                 }
             }
 
@@ -175,6 +194,10 @@ namespace FIDO2
                 sendResponse();
             }
 
+            void processMSG(){
+                callbackStr("Processing MSG command");
+            }
+
             // /**
             //  * Send the response with splitting in frames of FIDO2_CONTROL_POINT_LENGTH size
             //  */
@@ -182,51 +205,40 @@ namespace FIDO2
             {   
                 // Serial.println("Responding with payload");
                 // serialDumpBuffer(commandBuffer.getPayload(), commandBuffer.getPayloadLength());
-                memset(commandBuffer.getBuffer() + commandBuffer.getBufferLength(), 0, commandBuffer.getMaxBufferLength() - commandBuffer.getBufferLength());
-                int pageMultiple = (commandBuffer.getBufferLength() / CFG_TUD_HID_BUFSIZE) + (commandBuffer.getBufferLength() % CFG_TUD_HID_BUFSIZE > 0 ? 1 : 0);
 
                 callbackStr("Responding with payload");
-                (*callback)(commandBuffer.getBuffer(), CFG_TUD_HID_BUFSIZE * pageMultiple);
-
-                if(dev.write(commandBuffer.getBuffer(), CFG_TUD_HID_BUFSIZE * pageMultiple) == -1){
-                    callbackStr("Failed to send data to hid client");
-                } else {
-                    callbackStr("Success to send data to hid client");
-                }
+                callbackCStr(commandBuffer.getBuffer(), commandBuffer.getBufferLength());
 
                 // send the response back
-                // uint8_t sendBuffer[FIDO2_CONTROL_POINT_LENGTH];
+                size_t sent = 0;
+                size_t copySize;
+                for (uint8_t seq = 0; sent < commandBuffer.getBufferLength(); seq++)
+                {
+                    memset(sendBuffer, 0, HID_RESPONSE_BUFSIZE);
+                    if (seq == 0)
+                    {
+                        copySize = MIN(HID_RESPONSE_BUFSIZE, commandBuffer.getBufferLength());
+                        memcpy(sendBuffer, commandBuffer.getBuffer(), copySize);
+                        sent += copySize;
+                    }
+                    else
+                    {
+                        memcpy(sendBuffer, commandBuffer.getBuffer(), CID_LENGTH);
+                        sendBuffer[CID_LENGTH] = seq - 1;
 
-                // uint8_t sendBuffer[CFG_TUD_HID_BUFSIZE];
-                // size_t sent = 0;
-                // size_t copySize, sendSize;
-                // for (uint8_t seq = 0; sent < commandBuffer.getBufferLength(); seq++)
-                // {
-                //     memset(sendBuffer, 0, CFG_TUD_HID_BUFSIZE);
-                //     if (seq == 0)
-                //     {
-                //         sendSize = MIN(CFG_TUD_HID_BUFSIZE, commandBuffer.getBufferLength());
-                //         memcpy(sendBuffer, commandBuffer.getBuffer(), sendSize);
-                //         sent += sendSize;
-                //     }
-                //     else
-                //     {
-                //         memcpy(sendBuffer, commandBuffer.getBuffer(), CID_LENGTH);
-                //         sendBuffer[CID_LENGTH] = seq - 1;
+                        copySize = MIN(HID_RESPONSE_BUFSIZE - CID_LENGTH - 1, commandBuffer.getBufferLength() - sent);
+                        memcpy(sendBuffer + CID_LENGTH + 1, commandBuffer.getBuffer() + sent, copySize);
+                        sent += copySize;
+                    }
 
-                //         sendSize = MIN(CFG_TUD_HID_BUFSIZE - CID_LENGTH - 1, commandBuffer.getBufferLength() - sent);
-                //         memcpy(sendBuffer + CID_LENGTH + 1, commandBuffer.getBuffer() + sent, sendSize);
-                //         sent += sendSize;
-                //     }
-
-                //     callbackStr("Send chunk " + std::to_string(seq));
-                //     (*callback)(sendBuffer, CFG_TUD_HID_BUFSIZE);
-                //     if(dev.write(sendBuffer, CFG_TUD_HID_BUFSIZE) == -1){
-                //         callbackStr("Failed to send data to hid client");
-                //     } else {
-                //         callbackStr("Success to send data to hid client");
-                //     }
-                // }
+                    callbackStr("Send chunk " + std::to_string(seq));
+                    callbackCStr(sendBuffer, HID_RESPONSE_BUFSIZE);
+                    if(dev.write(sendBuffer, HID_RESPONSE_BUFSIZE) == -1){
+                        callbackStr("Failed to send data to hid client");
+                    } else {
+                        callbackStr("Success to send data to hid client");
+                    }
+                }
             }
 
         } // namespace USB

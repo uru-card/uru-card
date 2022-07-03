@@ -18,14 +18,14 @@ public:
       /* Report ID if any */\
       __VA_ARGS__ \
       /* Input */ \
-      HID_USAGE       ( 0x02                                   ),\
+      HID_USAGE       ( 0x20                                   ),\
       HID_LOGICAL_MIN ( 0x00                                   ),\
       HID_LOGICAL_MAX_N ( 0xff, 2                              ),\
       HID_REPORT_SIZE ( 8                                      ),\
       HID_REPORT_COUNT( report_size                            ),\
       HID_INPUT       ( HID_DATA | HID_ABSOLUTE | HID_VARIABLE ),\
       /* Output */ \
-      HID_USAGE       ( 0x03                                   ),\
+      HID_USAGE       ( 0x21                                   ),\
       HID_LOGICAL_MIN ( 0x00                                   ),\
       HID_LOGICAL_MAX_N ( 0xff, 2                              ),\
       HID_REPORT_SIZE ( 8                                      ),\

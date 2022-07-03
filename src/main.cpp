@@ -124,6 +124,10 @@ void setup()
 
 void loop()
 {
+#if defined(FIDO2_TRANSPORT_USB)
+    FIDO2::Transport::USB::Service::flush();
+#endif
+
 #if defined(HARDWARE_DISPLAY)
     Display::update();
 #endif

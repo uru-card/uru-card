@@ -104,7 +104,8 @@ namespace FIDO2
                 CBORArray cborTransports;
 #if defined(FIDO2_TRANSPORT_BLE)
                 cborTransports.append("ble");
-#elif defined(FIDO2_TRANSPORT_USB)
+#endif
+#if defined(FIDO2_TRANSPORT_USB)
                 cborTransports.append("usb");
 #endif
                 cborPair->append(0x09, cborTransports);
