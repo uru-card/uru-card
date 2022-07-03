@@ -9,6 +9,7 @@
 #include "fido2/ctap/ctap.h"
 #include "fido2/transport/usb/service.h"
 #include "fido2/transport/usb/buffer.h"
+#include "fido2/u2f/u2f.h"
 #include "display/display.h"
 #include "util/util.h"
 
@@ -56,9 +57,6 @@ namespace FIDO2
             }
 
             void HIDCallbacksImpl::onData(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize){
-                callbackStr("Command received");
-                callbackCStr(buffer, bufsize);
-                // callbackStr("Command buffer init sizeof(buffer): " + std::to_string(sizeof(buffer)) + ", bufsize: " + std::to_string(bufsize));
                 if(bufsize < CID_LENGTH + 1){
                   return;
                 }
@@ -75,7 +73,8 @@ namespace FIDO2
                 }
 
                 if (commandBuffer.isComplete()){
-                    // processRequest();
+                    callbackStr("Command received");
+                    callbackCStr(commandBuffer.getBuffer(), commandBuffer.getBufferLength());
                     xSemaphoreGive(xBinarySemaphore);
                 }
             }
@@ -107,12 +106,7 @@ namespace FIDO2
                     Serial.println("KEEPALIVE");
                     break;
                 case CMD_WINK:
-#if defined(LED_BUILTIN)
-                    digitalWrite(LED_BUILTIN, HIGH);
-                    delay(100);
-                    digitalWrite(LED_BUILTIN, LOW);
-#endif
-                    sendResponse();
+                    processWINK();
                     break;
                 case CMD_LOCK:
                     Serial.println("LOCK");
@@ -130,8 +124,8 @@ namespace FIDO2
                     payload[14] = 1; // minor device version (defined by vendor)
                     payload[15] = 1; // build device version (defined by vendor)
                     // capability flags bitfield (0x01 -> wink, 0x04 -> implements CMD_CBOR, 0x08 -> not implements CMD_MSG)
-                    // 00000100 -> 0x04, 00000101 -> 5
-                    payload[16] = 4; // set to 5 to let host know wink is implemented
+                    // 00000100 -> 0x04, 00000101 -> 5, 00001101 -> 13
+                    payload[16] = 5; // set to 5 to let host know wink is implemented
                     commandBuffer.setPayloadLength(17);
                 } else {
                     // ELSE CID is already created
@@ -195,7 +189,18 @@ namespace FIDO2
             }
 
             void processMSG(){
-                callbackStr("Processing MSG command");
+                uint16_t length = FIDO2::U2F::processMSG(commandBuffer.getPayload());
+                commandBuffer.setPayloadLength(length);
+                sendResponse();
+            }
+
+            void processWINK(){
+#if defined(LED_BUILTIN)
+                digitalWrite(LED_BUILTIN, HIGH);
+                delay(100);
+                digitalWrite(LED_BUILTIN, LOW);
+#endif
+                sendResponse();
             }
 
             // /**
@@ -231,13 +236,10 @@ namespace FIDO2
                         sent += copySize;
                     }
 
-                    callbackStr("Send chunk " + std::to_string(seq));
-                    callbackCStr(sendBuffer, HID_RESPONSE_BUFSIZE);
                     if(dev.write(sendBuffer, HID_RESPONSE_BUFSIZE) == -1){
                         callbackStr("Failed to send data to hid client");
-                    } else {
-                        callbackStr("Success to send data to hid client");
                     }
+                    delay(20);
                 }
             }
 
