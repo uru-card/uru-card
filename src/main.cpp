@@ -76,7 +76,13 @@ void setup()
     // esp_log_level_set("*", ESP_LOG_DEBUG);
 
 #ifdef LED_BUILTIN
+#ifdef LED_BUILTIN_INVERSE
+    digitalWrite(LED_BUILTIN, HIGH);
+#endif
     pinMode(LED_BUILTIN, OUTPUT);
+#ifdef LED_BUILTIN_INVERSE
+    digitalWrite(LED_BUILTIN, HIGH);
+#endif
 #endif
 
 #if defined(HARDWARE_DISPLAY)

@@ -109,7 +109,7 @@ namespace FIDO2
             FIDO2::Authenticator::sign(authData.get(), clientDataHash, &buffer[length], &signatureLength);
             length += signatureLength;
 
-            // status success
+            // status SW_NO_ERROR
             buffer[length++] = 0x90;
             buffer[length++] = 0x00;
           
@@ -141,10 +141,12 @@ namespace FIDO2
                 memcpy(keyHandleBuffer.value, keyHandle, keyHandleLength);
                 // search for credential by credential id (key handle)
                 if (CredentialsStorage::getCredential(keyHandleBuffer, &credential)){
+                    // status SW_CONDITIONS_NOT_SATISFIED
                     buffer[length++] = 0x69;
                     buffer[length++] = 0x85;
                     return length;
                 } else {
+                    // status SW_WRONG_DATA
                     buffer[length++] = 0x6a;
                     buffer[length++] = 0x80;
                     return length;
@@ -165,7 +167,7 @@ namespace FIDO2
             FIDO2::Authenticator::sign(authData.get(), clientDataHash, &buffer[length], &signatureLength);
             length += signatureLength;
 
-            // status success
+            // status SW_NO_ERROR
             buffer[length++] = 0x90;
             buffer[length++] = 0x00;
 
@@ -179,7 +181,7 @@ namespace FIDO2
             uint8_t version[] = "U2F_V2";
             length += sizeof(version);
 
-            // status success
+            // status SW_NO_ERROR
             buffer[length++] = 0x90;
             buffer[length++] = 0x00;
 

@@ -196,9 +196,15 @@ namespace FIDO2
 
             void processWINK(){
 #if defined(LED_BUILTIN)
+#ifdef LED_BUILTIN_INVERSE
+                digitalWrite(LED_BUILTIN, LOW);
+                delay(100);
+                digitalWrite(LED_BUILTIN, HIGH);
+#else
                 digitalWrite(LED_BUILTIN, HIGH);
                 delay(100);
                 digitalWrite(LED_BUILTIN, LOW);
+#endif
 #endif
                 sendResponse();
             }
