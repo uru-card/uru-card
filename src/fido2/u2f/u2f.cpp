@@ -95,7 +95,7 @@ namespace FIDO2
                 CredentialsStorage::createCredential(rpID, getUserID(), &credential);
             }
             memcpy(&buffer[length], credential->id.value, CREDENTIAL_ID_LENGTH);
-            length += 32;
+            length += CREDENTIAL_ID_LENGTH;
 
             // 5. attestation certificate
             memcpy(&buffer[length], FIDO2::Authenticator::certificate, FIDO2::Authenticator::certificateSize);

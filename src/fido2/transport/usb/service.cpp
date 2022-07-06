@@ -40,9 +40,9 @@ namespace FIDO2
             bool Service::init()
             {
                 xBinarySemaphore = xSemaphoreCreateBinary();
+                callback = &dummyCallback;
                 // dev.deviceID(0x20a0, 0x42b1);
                 dev.setCallbacks(new HIDCallbacksImpl());
-                callback = &dummyCallback;
                 return dev.begin();
             }
 

@@ -100,16 +100,9 @@ namespace FIDO2
 
             void CommandBuffer::setPayloadLength(uint16_t length)
             {
-                // buffer[5] = buffer[4];
-                // buffer[4] = buffer[3];
-                // buffer[3] = buffer[2];
-                // buffer[2] = buffer[1];
-                // buffer[1] = buffer[0];
-                // buffer[6] = length & 0xFF;
                 buffer[5] = (length >> 8) & 0xFF;
                 buffer[6] = length & 0xFF;
 
-                // position = length + 6; 
                 position = length + 7;
             }
 
