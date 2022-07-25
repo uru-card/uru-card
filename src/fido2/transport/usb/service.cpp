@@ -79,6 +79,18 @@ namespace FIDO2
                 }
             }
 
+            void blink(const uint8_t ledBuiltIn){
+#ifdef LED_BUILTIN_INVERSE
+                digitalWrite(ledBuiltIn, LOW);
+                delay(100);
+                digitalWrite(ledBuiltIn, HIGH);
+#else
+                digitalWrite(ledBuiltIn, HIGH);
+                delay(100);
+                digitalWrite(ledBuiltIn, LOW);
+#endif
+            }
+
             void processRequest()
             {
                 switch (commandBuffer.getCmd())
@@ -93,11 +105,8 @@ namespace FIDO2
                     processMSG();
                     break;
                 case CMD_PING:
-                    Serial.println("PING");
-                    sendResponse();
-                    break;
                 case CMD_CANCEL:
-                    Serial.println("CANCEL");
+                    sendResponse();
                     break;
                 case CMD_ERROR:
                     Serial.println("ERROR");
@@ -196,15 +205,11 @@ namespace FIDO2
 
             void processWINK(){
 #if defined(LED_BUILTIN)
-#ifdef LED_BUILTIN_INVERSE
-                digitalWrite(LED_BUILTIN, LOW);
-                delay(100);
-                digitalWrite(LED_BUILTIN, HIGH);
+            blink(LED_BUILTIN)
 #else
-                digitalWrite(LED_BUILTIN, HIGH);
-                delay(100);
-                digitalWrite(LED_BUILTIN, LOW);
-#endif
+            if(LED_BUILTIN){
+                blink(LED_BUILTIN);
+            }
 #endif
                 sendResponse();
             }

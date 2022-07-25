@@ -68,6 +68,16 @@ void sendLogToClientTCP(uint8_t const* buffer, uint16_t bufsize){
 }
 #endif
 
+void initLedBuiltIn(const uint8_t ledBuiltIn){
+#ifdef LED_BUILTIN_INVERSE
+    digitalWrite(ledBuiltIn, HIGH);
+#endif
+    pinMode(ledBuiltIn, OUTPUT);
+#ifdef LED_BUILTIN_INVERSE
+    digitalWrite(ledBuiltIn, HIGH);
+#endif
+}
+
 void setup()
 {
     Serial.begin(115200);
@@ -76,13 +86,11 @@ void setup()
     // esp_log_level_set("*", ESP_LOG_DEBUG);
 
 #ifdef LED_BUILTIN
-#ifdef LED_BUILTIN_INVERSE
-    digitalWrite(LED_BUILTIN, HIGH);
-#endif
-    pinMode(LED_BUILTIN, OUTPUT);
-#ifdef LED_BUILTIN_INVERSE
-    digitalWrite(LED_BUILTIN, HIGH);
-#endif
+    initLedBuiltIn(LED_BUILTIN);
+#else
+    if(LED_BUILTIN){
+        initLedBuiltIn(LED_BUILTIN);
+    }
 #endif
 
 #if defined(HARDWARE_DISPLAY)
