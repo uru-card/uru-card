@@ -205,11 +205,11 @@ namespace FIDO2
 
             void processWINK(){
 #if defined(LED_BUILTIN)
-            blink(LED_BUILTIN)
+                blink(LED_BUILTIN)
 #else
-            if(LED_BUILTIN){
-                blink(LED_BUILTIN);
-            }
+                if(LED_BUILTIN){
+                    blink(LED_BUILTIN);
+                }
 #endif
                 sendResponse();
             }

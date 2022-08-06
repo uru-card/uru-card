@@ -70,7 +70,8 @@ namespace FIDO2
             authData->flags.f.userPresent = true;
             authData->flags.f.userVerified = true;
             authData->flags.f.attestationData = true;
-            memcpy(&authData->rpIdHash, &buffer[7 + 32], 32); // application
+            Crypto::SHA256::hash(&buffer[7 + 32], 32, authData->rpIdHash); // application
+            String rpID = String(authData->rpIdHash, 32);
 
             // 1. first byte
             buffer[length++] = 0x05;
@@ -89,7 +90,6 @@ namespace FIDO2
 
             // 4. key handle
             CredentialsStorage::Credential* credential = nullptr;
-            String rpID = String(authData->rpIdHash, 32);
             // String rpID = "webauthn.me";
             if (!CredentialsStorage::findCredential(rpID, getUserID(), &credential)){
                 CredentialsStorage::createCredential(rpID, getUserID(), &credential);
@@ -120,47 +120,51 @@ namespace FIDO2
             uint16_t length = 0;
 
             uint8_t clientDataHash[32];
-            memcpy(clientDataHash, &buffer[7 + 1], 32); // challenge
+            memcpy(clientDataHash, &buffer[7], 32); // challenge
 
             std::unique_ptr<FIDO2::CTAP::AuthenticatorData> authData = std::unique_ptr<FIDO2::CTAP::AuthenticatorData>(new FIDO2::CTAP::AuthenticatorData());
             authData->signCount = 0;
             authData->flags.f.userPresent = true;
             authData->flags.f.userVerified = true;
-            authData->flags.f.attestationData = false;
-            memcpy(&authData->rpIdHash, &buffer[7 + 1 + 32], 32); // application
-            
-            String rpID = String(buffer[8], 32);
-            CredentialsStorage::Credential* credential = nullptr;
+            Crypto::SHA256::hash(&buffer[7 + 32], 32, authData->rpIdHash); // application
 
-            uint8_t controlByte = buffer[7];
+            uint8_t controlByte = buffer[2];
             if(controlByte == 0x03) { // enforce-user-presence-and-sign
-                uint8_t keyHandleLength = buffer[7 + 1 + 64];
-                uint8_t *keyHandle = &buffer[7 + 1 + 64 + 1];
-                FixedBuffer32 keyHandleBuffer;
-                keyHandleBuffer.alloc(keyHandleLength);
-                memcpy(keyHandleBuffer.value, keyHandle, keyHandleLength);
                 // search for credential by credential id (key handle)
-                if (CredentialsStorage::getCredential(keyHandleBuffer, &credential)){
-                    // status SW_CONDITIONS_NOT_SATISFIED
-                    buffer[length++] = 0x69;
-                    buffer[length++] = 0x85;
-                    return length;
-                } else {
-                    // status SW_WRONG_DATA
-                    buffer[length++] = 0x6a;
-                    buffer[length++] = 0x80;
-                    return length;
-                }
+                // if (!check_user_presence()){
+                //     // status SW_CONDITIONS_NOT_SATISFIED
+                //     buffer[length++] = 0x69;
+                //     buffer[length++] = 0x85;
+                //     return length;
+                // } 
+                // {
+                //     // status SW_WRONG_DATA
+                //     buffer[length++] = 0x6a;
+                //     buffer[length++] = 0x80;
+                //     return length;
+                // }
+            }
+
+            uint8_t keyHandleLength = buffer[7 + 64];
+            uint8_t *keyHandle = &buffer[7 + 64 + 1];
+            FixedBuffer32 keyHandleBuffer;
+            memcpy(keyHandleBuffer.value, keyHandle, keyHandleLength);
+            CredentialsStorage::Credential* credential = nullptr;
+            if(!CredentialsStorage::getCredential(keyHandleBuffer, &credential)){
+                // status SW_CONDITIONS_NOT_SATISFIED
+                buffer[length++] = 0x6a;
+                buffer[length++] = 0x80;
+                return length;
             }
 
             // 1. user presence
             buffer[length++] = 0x01;
 
             // 2. counter
-            buffer[length++] = ((uint8_t*)&authData->signCount)[0];
-            buffer[length++] = ((uint8_t*)&authData->signCount)[1];
-            buffer[length++] = ((uint8_t*)&authData->signCount)[2];
             buffer[length++] = ((uint8_t*)&authData->signCount)[3];
+            buffer[length++] = ((uint8_t*)&authData->signCount)[2];
+            buffer[length++] = ((uint8_t*)&authData->signCount)[1];
+            buffer[length++] = ((uint8_t*)&authData->signCount)[0];
 
             // 3. signature
             size_t signatureLength;
