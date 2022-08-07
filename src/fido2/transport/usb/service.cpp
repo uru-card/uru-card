@@ -99,9 +99,11 @@ namespace FIDO2
                     processINIT();
                     break;
                 case CMD_CBOR:
+                    // at the moment ctaphid use CBOR for get info call
                     processCBOR();
                     break;
                 case CMD_MSG:
+                    // at the moment ctaphid use MSG (U2F) for make credential (registration) and get assertion (authentication)
                     processMSG();
                     break;
                 case CMD_PING:
@@ -221,7 +223,6 @@ namespace FIDO2
             {   
                 // Serial.println("Responding with payload");
                 // serialDumpBuffer(commandBuffer.getPayload(), commandBuffer.getPayloadLength());
-
                 callbackStr("Responding with payload");
                 callbackCStr(commandBuffer.getBuffer(), commandBuffer.getBufferLength());
 
@@ -230,6 +231,8 @@ namespace FIDO2
                 size_t copySize;
                 for (uint8_t seq = 0; sent < commandBuffer.getBufferLength(); seq++)
                 {
+                    delay(20); // this delay helping synchronize usb hid write. don't remove it!
+
                     memset(sendBuffer, 0, HID_RESPONSE_BUFSIZE);
                     if (seq == 0)
                     {
@@ -250,7 +253,6 @@ namespace FIDO2
                     if(dev.write(sendBuffer, HID_RESPONSE_BUFSIZE) == -1){
                         callbackStr("Failed to send data to hid client");
                     }
-                    delay(20);
                 }
             }
 
