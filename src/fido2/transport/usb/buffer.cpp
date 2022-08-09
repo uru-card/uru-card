@@ -1,9 +1,10 @@
 #include <Arduino.h>
 
-#if defined(FIDO2_TRANSPORT_BLE)
+#if defined(FIDO2_TRANSPORT_USB)
 
-#include "fido2/transport/ble/buffer.h"
+#include "fido2/transport/usb/buffer.h"
 
+#include "ctaphid.h"
 #include "util/util.h"
 #include "util/be.h"
 
@@ -11,8 +12,9 @@ namespace FIDO2
 {
     namespace Transport
     {
-        namespace BLE
+        namespace USB
         {
+          
             CommandBuffer commandBuffer;
 
             void CommandBuffer::reset()
@@ -22,33 +24,48 @@ namespace FIDO2
 
             uint16_t CommandBuffer::init(const uint8_t *data, const uint16_t length)
             {
-                if (length > FIDO2_MAX_MSG_SIZE)
-                {
+                if (length > FIDO2_MAX_MSG_SIZE){
                     return 0;
                 }
 
                 memcpy(buffer, data, length);
-                position = length;
+
+                const uint16_t p_len = getPayloadLength();
+                position = MIN(p_len + 7, length);
 
                 return length;
             }
 
             uint16_t CommandBuffer::append(const uint8_t *data, const uint16_t length)
             {
-                if (position + length - 1 > FIDO2_MAX_MSG_SIZE)
-                {
+                if (position + length - 1 > FIDO2_MAX_MSG_SIZE){
                     return 0;
                 }
 
-                memcpy(buffer + position, data + 1, length - 1);
-                position += length - 1;
+                memcpy(buffer + position, data + CID_LENGTH + 1, length - CID_LENGTH - 1);
+                const uint16_t p_len = getPayloadLength();
+                position += MIN(p_len - position + 7, length - CID_LENGTH - 1);
 
                 return length;
             }
 
+            uint8_t* CommandBuffer::getCid()
+            {
+                return buffer;
+            }
+
+            uint8_t* CommandBuffer::newCid()
+            {
+                cid[0] = 0x01;
+                cid[1] = 0x02;
+                cid[2] = 0x03;
+                cid[3] = 0x04;
+                return cid;
+            }
+
             uint8_t CommandBuffer::getCmd()
             {
-                return buffer[0];
+                return buffer[CID_LENGTH] & 0x7F;
             }
 
             uint8_t *CommandBuffer::getBuffer()
@@ -68,25 +85,25 @@ namespace FIDO2
 
             bool CommandBuffer::isComplete()
             {
-                return buffer[0] != 0 && position == getPayloadLength() + 3;
+                return buffer[0] != 0 && position == getPayloadLength() + 7;
             }
 
             uint8_t *CommandBuffer::getPayload()
             {
-                return buffer + 3;
+                return buffer + 7;
             }
 
             uint16_t CommandBuffer::getPayloadLength()
             {
-                return be_uint16_t(buffer + 1);
+                return be_uint16_t(buffer + 5);
             }
 
             void CommandBuffer::setPayloadLength(uint16_t length)
             {
-                buffer[1] = (length >> 8) & 0xFF;
-                buffer[2] = length & 0xFF;
+                buffer[5] = (length >> 8) & 0xFF;
+                buffer[6] = length & 0xFF;
 
-                position = length + 3;
+                position = length + 7;
             }
 
         } // namespace BLE

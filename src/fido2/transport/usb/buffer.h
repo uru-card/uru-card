@@ -1,16 +1,18 @@
 #pragma once
 
-#if defined(FIDO2_TRANSPORT_BLE)
+#if defined(FIDO2_TRANSPORT_USB)
 
 #include <Arduino.h>
 
 #include "config.h"
 
+#define CID_LENGTH 4
+
 namespace FIDO2
 {
     namespace Transport
     {
-        namespace BLE
+        namespace USB
         {
             class CommandBuffer
             {
@@ -26,12 +28,15 @@ namespace FIDO2
 
                 bool isComplete();
 
+                uint8_t* getCid();
+                uint8_t* newCid();
                 uint8_t getCmd();
                 uint16_t getPayloadLength();
                 void setPayloadLength(uint16_t length);
                 uint8_t *getPayload();
 
             protected:
+                uint8_t cid[CID_LENGTH];
                 uint8_t buffer[FIDO2_MAX_MSG_SIZE];
                 uint16_t position;
             };

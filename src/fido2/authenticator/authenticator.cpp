@@ -134,6 +134,8 @@ namespace FIDO2
                 ret = processRequest((const FIDO2::CTAP::Request::Reset *)request, response);
                 break;
             default:
+                Serial.print("\n# Unknown command: ");
+                Serial.println(request->getCommandCode());
                 break;
             }
 
