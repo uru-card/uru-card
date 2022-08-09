@@ -62,9 +62,7 @@ namespace FIDO2
             if (request->pinUvAuthParam != nullptr && request->pinUvAuthParam->length == 0)
             {
                 //
-#if defined(HARDWARE_DISPLAY)
                 Display::showText("Use this device?\nTouch Ok to confirm");
-#endif
 
 #if defined(HARDWARE_KEYBOARD)
                 if (Keyboard::waitForTouch('\n', 30000))
@@ -144,8 +142,6 @@ namespace FIDO2
 
             //
             {
-
-#if defined(HARDWARE_DISPLAY)
                 char scrBuffer[100];
                 char rpid[20] = {};
                 strncpy(rpid, request->rp.name.c_str(), 19);
@@ -153,7 +149,6 @@ namespace FIDO2
                 strncpy(uname, request->user.displayName.c_str(), 19);
                 sprintf(scrBuffer, "Create new?\n%s\n%s\nTouch Ok to confirm", rpid, uname);
                 Display::showText(scrBuffer);
-#endif
 
 #if defined(HARDWARE_KEYBOARD)
                 if (!Keyboard::waitForTouch('\n', 30000))
@@ -162,9 +157,8 @@ namespace FIDO2
                     RAISE(CTAP::Exception(FIDO2::CTAP::CTAP2_ERR_OPERATION_DENIED));
                 }
 #endif
-#if defined(HARDWARE_DISPLAY)
+
                 Display::showText("");
-#endif
             }
 
             // 12. Generate a new credential key pair for the algorithm specified.

@@ -1,11 +1,8 @@
 #include <Arduino.h>
 
 #include "fido2/authenticator/authenticator.h"
-#include "cred-storage/storage.h"
 
 #include "crypto/crypto.h"
-
-#include "util/util.h"
 
 namespace FIDO2
 {
@@ -45,26 +42,8 @@ namespace FIDO2
             // 8. Collect user presence if required: ...
 
             // 9. If allowList is present: ...
-            if(request->allowList.size() > 0){
-              bool found = false;
-              CredentialsStorage::Credential* credential = nullptr;
-              
-              for (auto it = request->allowList.begin(); it != request->allowList.end(); it++){
-                if (CredentialsStorage::getCredential((*it)->credentialId, &credential)){
-                  resp->user.id = credential->userId;
-                  found = true;
-                  break;
-                }
-              }
 
-              if(!found){
-                RAISE(CTAP::Exception(FIDO2::CTAP::CTAP2_ERR_NO_CREDENTIALS));
-              }
-            }
             // 10. If allowlist is not present: ...
-            else {
-              // get credential list by rpId
-            }
 
             Crypto::SHA256::hash((uint8_t *)request->rpId.c_str(), request->rpId.length(), resp->authenticatorData.rpIdHash);
 

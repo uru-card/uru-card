@@ -1,7 +1,5 @@
 #include <Arduino.h>
 
-#if defined(FIDO2_TRANSPORT_BLE)
-
 #include "fido2/transport/ble/buffer.h"
 
 #include "util/util.h"
@@ -92,5 +90,3 @@ namespace FIDO2
         } // namespace BLE
     }     // namespace Transport
 } // namespace FIDO2
-
-#endif

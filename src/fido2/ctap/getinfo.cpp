@@ -98,16 +98,11 @@ namespace FIDO2
                 cborPair->append(0x07, (uint8_t)8);
 
                 // maxCredentialIdLength
-                cborPair->append(0x08, (uint8_t)CREDENTIAL_ID_LENGTH);
+                cborPair->append(0x08, (uint8_t)16);
 
                 // List of supported transports
                 CBORArray cborTransports;
-#if defined(FIDO2_TRANSPORT_BLE)
                 cborTransports.append("ble");
-#endif
-#if defined(FIDO2_TRANSPORT_USB)
-                cborTransports.append("usb");
-#endif
                 cborPair->append(0x09, cborTransports);
 
                 // List of supported algorithms for credential generation.

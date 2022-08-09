@@ -1,7 +1,5 @@
 #pragma once
 
-#if defined(FIDO2_TRANSPORT_BLE)
-
 #include <Arduino.h>
 
 #include "config.h"
@@ -41,5 +39,3 @@ namespace FIDO2
         } // namespace BLE
     }     // namespace Transport
 } // namespace FIDO2
-
-#endif

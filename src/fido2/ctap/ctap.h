@@ -223,7 +223,7 @@ namespace FIDO2
             public:
                 MakeCredential()
                 {
-                    options.rk = true;  // TODO: verify how it must work. This option default should be false by the specs, but credentials must be generated, otherwise webauthn.me throws an error.
+                    options.rk = false;
                     options.uv = false;
                     options.up = false;
                 }
